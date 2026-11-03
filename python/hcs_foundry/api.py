@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import re
 import secrets
 import threading
 import time
@@ -20,7 +21,7 @@ from typing import Any
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, ValidationError
 
 from .errors import FoundryError, NotFoundError, SecurityViolation, ValidationFailure
@@ -364,6 +365,19 @@ def create_app(
     @app.get("/api/v1/tool-calls", dependencies=[Depends(auth)])
     def tool_calls(limit: int = 50) -> list[dict[str, Any]]:
         return foundry.repo.list_tool_calls(limit=limit)
+
+    @app.get("/api/v1/artifacts/{artifact_id}", dependencies=[Depends(auth)])
+    def get_artifact(artifact_id: str) -> FileResponse:
+        """Serve a content-addressed artifact (reports, exports). Ids are validated as sha256."""
+        if not re.fullmatch(r"[0-9a-f]{64}", artifact_id):
+            raise ValidationFailure(
+                "artifact ids are 64-character lowercase hex digests",
+                hint="use the sha256 returned by the run that produced the artifact",
+            )
+        candidates = list(foundry.workspace.artifacts.glob(f"{artifact_id[:2]}/{artifact_id}*"))
+        if not candidates:
+            raise NotFoundError(f"artifact {artifact_id[:12]}… not found in this workspace")
+        return FileResponse(candidates[0], filename=candidates[0].name)
 
     @app.get("/api/v1/proposals", dependencies=[Depends(auth)])
     def proposals(model_id: str | None = None) -> list[dict[str, Any]]:

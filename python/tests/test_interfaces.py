@@ -196,6 +196,17 @@ def test_sse_endpoint_requires_token(client):
     assert client.get("/api/v1/events/run_missing").status_code == 401
 
 
+def test_artifact_endpoint_serves_content_addressed_files(client, foundry):
+    from hcs_foundry.checkpoints import write_artifact
+
+    sha, path = write_artifact(foundry.workspace, b'{"report": "ok"}', ".json")
+    response = client.get(f"/api/v1/artifacts/{sha}", headers=auth_headers())
+    assert response.status_code == 200
+    assert response.content == b'{"report": "ok"}'
+    assert client.get("/api/v1/artifacts/not-a-hash", headers=auth_headers()).status_code == 422
+    assert client.get(f"/api/v1/artifacts/{'0' * 64}", headers=auth_headers()).status_code == 404
+
+
 def test_rate_limiter_blocks_burst():
     limiter = RateLimiter(limit=2, window=60)
     limiter.check("a")
