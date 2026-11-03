@@ -2,7 +2,7 @@
 
 ## 1. What the suites cover
 
-### Python (`python/tests`, pytest, 85 tests)
+### Python (`python/tests`, pytest, 86 tests)
 
 | File | Focus |
 |---|---|

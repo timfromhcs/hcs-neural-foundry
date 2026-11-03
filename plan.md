@@ -180,7 +180,7 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 
 ## Phase 13 — QA gates
 
-- [x] 85 pytest tests, 34 vitest tests, ruff clean, TypeScript strict clean.
+- [x] 86 pytest tests, 34 vitest tests, ruff clean, TypeScript strict clean.
 - [x] Numerical checks: gradient reachability, parameter-count equality, ONNX parity, patch finiteness.
 - [x] Security tests: auth, CORS, rate limit, approval gate, dangerous-primitive scan.
 - [x] i18n parity test.
@@ -202,7 +202,7 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 | Deliverable | Count / result |
 |---|---|
 | Python modules | 30 files (engine, storage, interfaces, verifier) |
-| Python tests | 85 passed |
+| Python tests | 86 passed |
 | Web tests | 34 passed |
 | CLI leaf commands | 26 |
 | MCP tools | 20 (13 read-only, 7 gated) |
