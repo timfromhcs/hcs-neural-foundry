@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Node
+node_modules/
+apps/web/dist/
+apps/web/.vite/
+*.tsbuildinfo
+
+# Local artifacts / workspace data
+artifacts/
+workspace/
+*.db
+*.db-wal
+*.db-shm
+
+# Heavy model weights are never committed
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.onnx
+!apps/web/public/models/*.onnx
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# OS
+Thumbs.db
+.DS_Store
