@@ -59,19 +59,22 @@ class ApprovalGate:
 
 
 def build_server(foundry: Foundry | None = None, *, approved: set[str] | None = None):
+    # SDK v2 (2026-07-28 revision) replaced FastMCP with MCPServer. The decorator API is unchanged;
+    # the module `mcp.server.fastmcp` no longer exists, so importing it would silently pin us to the
+    # v1 maintenance line.
     try:
-        from mcp.server.fastmcp import FastMCP
+        from mcp.server import MCPServer
     except Exception as exc:  # pragma: no cover - optional extra
         raise FoundryError(
             "the MCP extra is not installed",
-            hint='install: uv pip install -e ".[mcp]"',
+            hint='install: uv pip install -e ".[mcp]"  (requires mcp>=2.3,<3)',
             details={"import_error": str(exc)},
         ) from exc
 
     foundry = foundry or Foundry()
     gate = ApprovalGate(approved)
     policy = AgentPolicy()
-    server = FastMCP(
+    server = MCPServer(
         "hcs-neural-foundry",
         instructions=(
             "Local-first neural network workbench. Read-only tools are always available. Tools that "

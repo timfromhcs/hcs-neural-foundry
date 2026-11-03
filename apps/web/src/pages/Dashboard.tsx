@@ -13,7 +13,7 @@ import type { ModelRecord, RunRecord } from "../lib/types";
 export function DashboardPage({ onNavigate }: { onNavigate: (route: string) => void }) {
   const t = useT();
   const { locale } = useI18n();
-  const { db, demo, demoError, version } = useApp();
+  const { db, demo, demoError, version, preferences } = useApp();
   const [models, setModels] = useState<ModelRecord[]>([]);
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [storage, setStorage] = useState({ used: 0, quota: 0 });
@@ -41,9 +41,10 @@ export function DashboardPage({ onNavigate }: { onNavigate: (route: string) => v
     setBusy(true);
     setError(null);
     try {
-      const status = await backendStatus("auto");
+      // Respect the provider chosen in Settings; "auto" is only the default, not a hard override.
+      const status = await backendStatus(preferences.provider);
       setBackend(status);
-      const result = await runDemoModel(encodePrompt("hcs foundry builds", 64), "auto");
+      const result = await runDemoModel(encodePrompt("hcs foundry builds", 64), preferences.provider);
       setInference({ ms: result.ms, provider: result.provider, next: argmax(result.logits.slice(-64)) });
     } catch (cause) {
       setError((cause as Error).message);

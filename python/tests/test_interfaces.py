@@ -255,6 +255,30 @@ def test_approval_gate_accepts_explicit_approval(monkeypatch):
     gate.require("foundry_start_training")
 
 
+def _tool_text(result) -> str:
+    """Extract the text payload from an MCP v2 CallToolResult (or a v1-style tuple)."""
+    content = result[0] if isinstance(result, tuple) else getattr(result, "content", result)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list) and content:
+        first = content[0]
+        return getattr(first, "text", None) or str(first)
+    return json.dumps(content, default=str)
+
+
+def test_mcp_sdk_major_version_is_two():
+    """The server targets the 2026-07-28 revision, which only SDK v2 speaks."""
+    import mcp
+
+    major = int(mcp.__version__.split(".")[0]) if hasattr(mcp, "__version__") else None
+    if major is None:  # pragma: no cover - fallback for builds without __version__
+        from importlib.metadata import version
+
+        major = int(version("mcp").split(".")[0])
+    assert major == 2, f"expected mcp v2 (2026-07-28 revision), found v{major}"
+    from mcp.server import MCPServer  # noqa: F401  - import path is part of the contract
+
+
 def test_mcp_server_registers_read_and_gated_tools(foundry):
     server = build_server(foundry, approved=set())
     tools = asyncio.run(server.list_tools())
@@ -264,15 +288,38 @@ def test_mcp_server_registers_read_and_gated_tools(foundry):
 
     # A gated tool must refuse without approval and log the failure as an error payload.
     result = asyncio.run(server.call_tool("foundry_start_training", {"model_id": "nope", "steps": 1}))
-    payload = result[0] if isinstance(result, tuple) else result
-    text = json.dumps(payload, default=str) if not isinstance(payload, str) else payload
+    text = _tool_text(result)
     assert "security_violation" in text or "approval" in text.lower()
 
-    # A read-only tool works.
+    # A read-only tool works and is not flagged as an error.
     read_result = asyncio.run(server.call_tool("foundry_get_hardware_profile", {}))
-    read_payload = read_result[0] if isinstance(read_result, tuple) else read_result
-    text = json.dumps(read_payload, default=str) if not isinstance(read_payload, str) else read_payload
-    assert "backends" in text
+    assert not getattr(read_result, "is_error", False)
+    assert "backends" in _tool_text(read_result)
+
+
+def test_mcp_cli_forwards_approvals(monkeypatch, home):
+    """`hcs-foundry mcp serve --approve TOOL` must reach the server; it was previously env-only."""
+    import hcs_foundry.mcp_server as mcp_server
+
+    captured: list[list[str]] = []
+
+    def fake_main(argv=None):
+        captured.append(list(argv or []))
+        return 0
+
+    monkeypatch.setattr(mcp_server, "main", fake_main)
+    assert cli_main(["mcp", "serve", "--approve", "foundry_start_training"]) == 0
+    assert captured[-1] == ["--approve", "foundry_start_training"]
+
+    # The positional is optional: bare `mcp` still serves.
+    assert cli_main(["mcp"]) == 0
+    assert captured[-1] == []
+
+
+def test_mcp_cli_rejects_unknown_command(home, capsys):
+    code = cli_main(["mcp", "start"])
+    assert code != 0
+    assert "unknown mcp command" in capsys.readouterr().err
 
 
 def test_mcp_tool_calls_are_audited(foundry):

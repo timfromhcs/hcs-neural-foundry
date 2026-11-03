@@ -1,6 +1,6 @@
 [project]
 name = "hcs-foundry"
-version = "0.1.0"
+version = "0.2.0"
 description = "HCS Neural Foundry - local-first neural network design, weight-space research and agent studio"
 readme = "README.md"
 license = { text = "MIT" }
@@ -28,7 +28,7 @@ dependencies = [
 [project.optional-dependencies]
 torch = ["torch>=2.5,<3"]
 export = ["onnx>=1.16,<2", "onnxruntime>=1.19,<2"]
-mcp = ["mcp>=1.2,<2"]
+mcp = ["mcp>=2.3,<3"]
 dev = [
   "pytest>=8.3,<9",
   "pytest-cov>=5,<7",

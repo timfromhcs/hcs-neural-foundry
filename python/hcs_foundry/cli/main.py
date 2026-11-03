@@ -594,7 +594,18 @@ def cmd_api(args: argparse.Namespace) -> int:
 def cmd_mcp(args: argparse.Namespace) -> int:
     from ..mcp_server import main as mcp_main
 
-    return mcp_main(["--home", str(args.home or "")] if args.home else [])
+    command = getattr(args, "command", "serve") or "serve"
+    if command != "serve":
+        raise FoundryError(
+            f"unknown mcp command '{command}'",
+            hint="the only supported command is 'mcp serve'",
+        )
+    argv: list[str] = []
+    if args.home:
+        argv += ["--home", str(args.home)]
+    for tool in getattr(args, "approve", None) or []:
+        argv += ["--approve", tool]
+    return mcp_main(argv)
 
 
 def cmd_preset_list(args: argparse.Namespace) -> int:
@@ -799,6 +810,20 @@ def build_parser() -> argparse.ArgumentParser:
     api.set_defaults(func=cmd_api)
 
     mcp = sub.add_parser("mcp", help="MCP server over stdio")
+    mcp.add_argument(
+        "command",
+        nargs="?",
+        default="serve",
+        metavar="{serve}",
+        help="only 'serve' is supported (default: serve)",
+    )
+    mcp.add_argument(
+        "--approve",
+        action="append",
+        default=[],
+        metavar="TOOL",
+        help="approve a gated tool by name; repeatable. Same effect as HCS_FOUNDRY_MCP_APPROVE.",
+    )
     mcp.set_defaults(func=cmd_mcp)
 
     return parser
