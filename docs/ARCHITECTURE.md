@@ -36,6 +36,8 @@ three interfaces from drifting apart in behaviour or policy.
 | `rl.py` | GRPO on a toy contextual bandit, sealed reward fixture, policy artifact, isolated verification | claim LLM post-training; read the sealed rule from the policy's side |
 | `rl_verify.py` | Separate-process policy scorer that re-checks the fixture hash | share objects with the trainer |
 | `generators.py` | Conditional hypernetwork over task descriptors, leakage guard | pretend to implement diffusion/flow matching |
+| `alignment.py` | Activations + Hungarian assignment; exact permutation, functional check | align architectures with more than one hidden layer |
+| `flow.py` | Conditional flow matching over an aligned corpus, Euler sampling, OOD + reconstruction report | claim the papers' scale or benchmarks |
 | `exporting.py` | ONNX export + parity check against the native model | claim parity without running the graph |
 | `agents.py` | Policy, proposal construction, isolated verifier subprocess | give an agent a tensor handle |
 | `storage.py` | SQLite migrations, repositories, head pointer, events, audit log | hold large blobs in the database |

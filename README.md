@@ -24,6 +24,7 @@ honestly, reproducibly, and without a hidden cloud backend.
 | Evolution Strategies + MAP-Elites archive on a tiny model | experimental | `hcs-foundry evolve` |
 | GRPO on a toy verifiable-reward environment with sealed fixture | experimental | `hcs-foundry rl grpo` |
 | Hypernetwork weight generator for a fixed tiny MLP | experimental | `hcs-foundry generate` |
+| Permutation alignment + flow matching in weight space | experimental | `hcs-foundry generate --method flow` |
 | ONNX export + inference parity check | experimental | `hcs-foundry export` |
 | Local HTTP API with token auth, strict CORS, rate limits | stable | `hcs-foundry api serve` |
 | MCP server (stdio) with read-only + approval-gated tools | experimental | `hcs-foundry mcp serve` |

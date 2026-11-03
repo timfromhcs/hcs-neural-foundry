@@ -108,12 +108,18 @@ Gate: reproducible run; reload reproduces inference; invalid runs are not zeros.
 - [~] Checkpoint corpus manifest: implemented as the generator report (`corpus` entries with split,
       steps, param norm) rather than a standalone licensed corpus file, because no external corpus is
       used.
-- [!] D2NWG-style diffusion and DeepWeightFlow-style flow matching: not implemented. Reason: they need
-      a real checkpoint corpus, permutation canonicalisation and OOD evaluation; a 40-line mock with the
-      papers' names on it would be a false capability claim.
-- [x] Git Re-Basin alignment: **not implemented**; documented as a prerequisite in `docs/RESEARCH.md`.
+- [x] Permutation alignment for one-hidden-layer MLPs: activation correlation + Hungarian assignment,
+      with an exact functional check and a brute-force-verified solver.
+- [x] Conditional flow matching in weight space over the aligned corpus, Euler sampling, and a report
+      that separates reconstruction from out-of-distribution behaviour.
+- [x] Measured honestly: reconstruction distance 7e-06, sampling not collapsed, OOD at chance. The
+      negative OOD result is published in `docs/PERFORMANCE.md` instead of being tuned away.
+- [!] D2NWG-style diffusion and DeepWeightFlow-scale results: still unsupported. They need a real
+      corpus (thousands of checkpoints), dataset-conditioned encoders and cross-architecture
+      alignment. A toy flow model with the papers' names on it would be a false capability claim.
 
-Gate: generated candidate evaluated out-of-sample, no SOTA language. **PASSED (narrow scope).**
+Gate: generated candidate evaluated out-of-sample and *in*-distribution, alignment verified, no SOTA
+language. **PASSED (narrow scope, negative OOD result published).**
 
 ## Phase 7 — Evolution and quality-diversity
 
@@ -214,21 +220,23 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 
 | Deliverable | Count / result |
 |---|---|
-| Python modules | 32 files (engine, storage, interfaces, verifier) |
-| Python tests | 99 passed |
+| Python modules | 34 files (engine, storage, interfaces, verifiers) |
+| Python tests | 118 passed |
 | Web tests | 40 passed (incl. 6 accessibility audits) |
 | CLI leaf commands | 27 |
 | MCP tools | 20 (13 read-only, 7 gated) |
 | API endpoints | 34 |
 | Weight operations | 12 (engine) + 5 (browser) |
 | RL environments | 1 (rule-bandit, sealed fixture) |
+| Weight generators | 2 (hypernetwork, conditional flow matching) |
 | Lessons | 20 |
 | ADRs | 16 |
 | Bundle (gzip) | ~109 kB JS + 3.5 kB CSS + 29.5 MB ONNX runtime WASM |
 
 ## Backlog (explicitly open, not forgotten)
 
-1. Diffusion / flow-matching weight generators with real corpus + Git Re-Basin alignment.
+1. Corpus-scale weight generation: thousands of aligned checkpoints, a diffusion trainer, and
+   cross-architecture alignment (Git Re-Basin beyond one hidden layer).
 2. DPO/PPO/RLHF and token-level GRPO over transformer completions (the bandit covers the algorithm).
 3. Masked diffusion language model trainer/sampler.
 4. Tauri desktop shell + single-file launcher; npm/PyPI publication with provenance.

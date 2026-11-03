@@ -574,12 +574,20 @@ class Foundry:
             "best_parameters_sha256": result["best_parameters_sha256"],
         }
 
-    def generate(self, config: GeneratorConfig) -> dict[str, Any]:
+    def generate(self, config: GeneratorConfig, *, method: str = "hypernetwork") -> dict[str, Any]:
+        """Train a weight generator. ``method`` selects the implemented family, never a mock."""
         model = self.repo.get_model(config.target_model_id)
         if model.config.family != "mlp":
             raise ValidationFailure(
-                "the hypernetwork generator currently targets MLP models only",
+                "weight generation currently targets MLP models only",
                 hint="this limitation is intentional and documented in docs/STATUS.md",
+            )
+        if method == "flow":
+            return self._generate_flow(config, model)
+        if method != "hypernetwork":
+            raise ValidationFailure(
+                f"unknown generator method '{method}'",
+                hint="implemented methods: hypernetwork, flow",
             )
         handle, record = self.handle_for(config.target_model_id, None)
         report = train_hypernetwork(model.config, config)
@@ -657,6 +665,59 @@ class Foundry:
             run_id=run_id or new_id("run"),
             progress=progress,
         )
+
+    def _generate_flow(self, config: GeneratorConfig, model: Any) -> dict[str, Any]:
+        """Conditional flow matching over an aligned checkpoint corpus."""
+        from .flow import run_flow_experiment
+
+        report = run_flow_experiment(model.config, config)
+        generator_weights = report.pop("model", None)
+        sha, path = write_artifact(
+            self.workspace,
+            json.dumps({"report": report, "generator": generator_weights}, indent=2, default=str).encode("utf-8"),
+            ".json",
+        )
+        run = RunRecord(
+            id=new_id("run"),
+            kind="generation",
+            model_id=config.target_model_id,
+            state=RunState.COMPLETED,
+            config={"method": "flow", **config.model_dump(mode="json")},
+            summary={
+                "method": report["method"],
+                "alignment": {"all_verified": report["alignment"]["all_verified"]},
+                "in_distribution": report["in_distribution"],
+                "sampling_diversity": report["sampling_diversity"],
+                "results": report["results"],
+                "claim_boundary": report["claim_boundary"],
+                "report_sha256": sha,
+                "report_path": str(path),
+            },
+            provenance=Provenance(
+                engine_version=ENGINE_VERSION,
+                python=platform.python_version(),
+                torch=torch_module().__version__,
+                platform=platform.platform(),
+                seeds={"generator": config.seed},
+                architecture_hash=model.architecture_hash,
+                notes=["flow matching: one hidden layer, aligned corpus"],
+            ),
+            finished_at=utcnow(),
+        )
+        self.repo.add_run(run)
+        return {
+            "run_id": run.id,
+            "method": report["method"],
+            "report_sha256": sha,
+            "report_path": str(path),
+            "alignment": {"all_verified": report["alignment"]["all_verified"]},
+            "in_distribution": report["in_distribution"],
+            "sampling_diversity": report["sampling_diversity"],
+            "generated_mean_accuracy": report["results"]["generated_mean_accuracy"],
+            "random_init_mean_accuracy": report["results"]["random_init_mean_accuracy"],
+            "gradient_trained_mean_accuracy": report["results"]["gradient_trained_mean_accuracy"],
+            "claim_boundary": report["claim_boundary"],
+        }
 
     # -- export ------------------------------------------------------------------------------
     def export(self, model_id: str, *, fmt: str = "onnx", checkpoint: str = "latest") -> dict[str, Any]:

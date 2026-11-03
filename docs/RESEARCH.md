@@ -70,6 +70,16 @@ symmetry, reporting complete networks that need no fine-tuning in its evaluated 
 The important engineering lesson is not "flow matching wins". It is that **alignment is mandatory**:
 interpolating or modelling unaligned checkpoints averages functionally unrelated solutions.
 
+What this repository implements (toy scale, `flow.py` + `alignment.py`): activation-correlation +
+Hungarian assignment to align one-hidden-layer MLPs exactly, then a conditional flow-matching model
+`v(x_t, t, c)` trained on the aligned corpus and integrated with Euler steps. On four to six synthetic
+tasks it reconstructs training checkpoints almost exactly (relative parameter distance ~7e-06) and
+scores at chance on held-out tasks. That second number is the honest one: a handful of checkpoints is
+not a corpus, and the papers' results rest on thousands.
+
+What is **not** implemented: the papers' diffusion/flow architectures at their scale, dataset-conditioned
+encoders, and cross-architecture alignment. Calling the toy pipeline a reproduction would be false.
+
 ### 2.4 Weight space learning survey (context)
 
 Han et al., *A Survey of Weight Space Learning: Understanding, Representation, and Generation*,

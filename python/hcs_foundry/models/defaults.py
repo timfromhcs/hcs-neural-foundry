@@ -37,4 +37,10 @@ def presets() -> dict[str, dict[str, Any]]:
                 mode="json"
             ),
         },
+        "flow-mlp": {
+            "description": "single hidden layer, required by permutation alignment and flow matching",
+            "config": MlpConfig(input_dim=16, hidden_dims=(24,), output_dim=4, activation="gelu").model_dump(
+                mode="json"
+            ),
+        },
     }

@@ -40,9 +40,11 @@
       "requirement": "A small generator produces a candidate with a reproducible seed and independent evaluation",
       "status": "declared",
       "evidence": [
-        "python/tests/test_generators.py::test_generator_runs_end_to_end"
+        "python/tests/test_generators.py::test_generator_runs_end_to_end",
+        "python/tests/test_alignment.py",
+        "python/tests/test_flow.py::test_flow_experiment_reports_alignment_reconstruction_and_boundaries"
       ],
-      "limitation": "One MLP family, synthetic tasks, three held-out tasks; no SOTA claim"
+      "limitation": "Hypernetwork and flow matching both run, with exact one-hidden-layer alignment. Out-of-distribution generation is at chance on this corpus size; diffusion (D2NWG-like) is not implemented."
     },
     {
       "area": "Gradient training",

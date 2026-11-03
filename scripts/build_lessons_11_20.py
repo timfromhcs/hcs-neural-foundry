@@ -78,9 +78,8 @@ so serious work canonicalises first (Git Re-Basin style) and stores the permutat
 This build declares both methods unsupported. The interface exists; a mocked demo does not.""",
         """Flow matching objective: regress `v_θ(x_t, t)` onto `x_1 - x_0` along an interpolation path.
 Diffusion objective: predict the noise added at level `t`, then sample by iterating the reverse process.""",
-        """# Not implemented on purpose. The reproducible scopes are documented instead:
-Get-Content docs/RESEARCH.md
-hcs-foundry generate --help""",
+        """hcs-foundry model create --preset flow-mlp --name "Flow Lab"
+hcs-foundry generate --model flow-lab --method flow --corpus 101,202,303,404,505,606""",
         "Write down what evidence would convince you that generated weights beat a trained baseline, then check whether this repo provides it.",
         "It does not — and `docs/RESEARCH.md` says so. That is the intended outcome of this lesson.",
         "Shipping an approximation under a paper's name. It looks like progress and is actually a fabricated capability.",

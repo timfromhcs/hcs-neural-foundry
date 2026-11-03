@@ -25,9 +25,8 @@ Diffusion objective: predict the noise added at level `t`, then sample by iterat
 ## Run it
 
 ```powershell
-# Not implemented on purpose. The reproducible scopes are documented instead:
-Get-Content docs/RESEARCH.md
-hcs-foundry generate --help
+hcs-foundry model create --preset flow-mlp --name "Flow Lab"
+hcs-foundry generate --model flow-lab --method flow --corpus 101,202,303,404,505,606
 ```
 
 ## Exercise
@@ -36,7 +35,7 @@ Write down what evidence would convince you that generated weights beat a traine
 
 ## What you should observe
 
-It does not — and `docs/RESEARCH.md` says so. That is the intended outcome of this lesson.
+Alignment is verified, the generator reconstructs the checkpoints it saw almost exactly (relative distance ~7e-06), and its generations on unseen tasks score at chance. Read both numbers together: the machinery works, the corpus does not. That distinction is the lesson.
 
 ## Common mistake
 

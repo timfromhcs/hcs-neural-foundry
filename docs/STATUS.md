@@ -25,8 +25,10 @@ Last verified: 2026-11-03, on Windows 11 (Ryzen 7 7735HS, CPU-only torch 2.15.0,
 | ONNX export with numerical parity gate | experimental | `exporting.py`; parity 7e-07 on the demo model |
 | Evolution Strategies + MAP-Elites | experimental | `evolution.py`; tiny MLP only, example-matched baseline |
 | Conditional hypernetwork generator | experimental | `generators.py`; one MLP family, 3 held-out tasks |
-| Weight-space diffusion (D2NWG-like) | unsupported | interface slot only |
-| Flow matching (DeepWeightFlow-like) | unsupported | interface slot only |
+| Permutation alignment (one hidden layer) | experimental | `alignment.py`: Hungarian assignment on activations; exact permutation check in tests |
+| Conditional flow matching in weight space | experimental | `flow.py`: reconstruction distance 7e-06; out-of-distribution at chance (reported, not hidden) |
+| Weight-space diffusion (D2NWG-like) | unsupported | no diffusion trainer; flow matching covers the generative part only |
+
 | LoRA fine-tuning of a pretrained base | unsupported | low-rank *edits* exist; no base model shipped |
 | GRPO trainer on a toy verifiable reward | experimental | `rl.py`: held-out 0.891 vs reference 0.375 on 256 unseen contexts |
 | DPO / PPO / RLHF / LLM-scale GRPO | unsupported | no token-level rollouts, reward model or compute budget |
@@ -83,6 +85,10 @@ Last verified: 2026-11-03, on Windows 11 (Ryzen 7 7735HS, CPU-only torch 2.15.0,
 6. WebGPU depends on the installed browser/GPU; the WASM path is the tested default.
 7. GRPO is demonstrated on a contextual bandit, not on the transformer; the reward is exact and the
    environment is toy-sized on purpose.
+9. Flow matching reproduces checkpoints it was trained on (relative parameter distance 7e-06) but its
+   out-of-distribution generations score at chance. That is a corpus-size result, reported as such.
+10. Alignment is exact for a single hidden layer. Deeper models and cross-architecture alignment need a
+    real Git Re-Basin implementation and are not attempted.
 8. Accessibility is verified with axe-core; colour contrast is a manual check because jsdom has no
    layout engine.
 

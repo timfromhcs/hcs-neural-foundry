@@ -2,7 +2,7 @@
 
 ## 1. What the suites cover
 
-### Python (`python/tests`, pytest, 99 tests)
+### Python (`python/tests`, pytest, 118 tests)
 
 | File | Focus |
 |---|---|
@@ -11,6 +11,8 @@
 | `test_interfaces.py` | CLI contract and exit codes, API auth/CORS/rate-limit/error shape, background job lifecycle, MCP approval gate and tool registration/audit |
 | `test_generators.py` | leakage guard, non-MLP rejection, end-to-end generator run |
 | `test_rl.py` | reward exactness, sealed-fixture tampering, group advantages, GRPO improvement, KL-penalty trade-off, isolated verification |
+| `test_alignment.py` | Hungarian solver vs brute force, rectangular matrices, exact permutation recovery, corpus alignment |
+| `test_flow.py` | loss decrease and determinism, sampling, layout round-trip, end-to-end reconstruction + honest boundaries |
 
 ### Web (`apps/web/tests`, vitest, 40 tests)
 
@@ -102,6 +104,17 @@ which is the point of having the gate.
 3. a short run improves held-out accuracy over its own reference policy, and the saved policy is
    re-scored in a separate process.
 
-## 9. Evidence from the last full run
+## 9. Weight-space generation gate
+
+`test_alignment.py` compares the assignment solver against brute force for every permutation up to
+size 5, then asserts that a known hidden-unit permutation is recovered exactly and that the permuted
+model's function is unchanged. `test_flow.py` asserts the flow loss decreases, sampling is finite and
+correctly shaped, the layout conversions round-trip, and the end-to-end experiment reports alignment,
+reconstruction, sampling diversity and an explicit claim boundary.
+
+The suite deliberately does **not** assert that generated weights beat gradient training. On this
+corpus size they do not, and `docs/PERFORMANCE.md` records that.
+
+## 10. Evidence from the last full run
 
 Recorded in `docs/PERFORMANCE.md` (numbers, machine, date). Regenerate with `scripts/verify.ps1`.

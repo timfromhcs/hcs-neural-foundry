@@ -98,6 +98,28 @@ is not equalised in either direction.
 integrity. It says nothing about language-model post-training. A large KL penalty does what it should:
 at `kl_beta=10` the policy stays close to the reference (exact KL 0.33) and gives up reward (0.336).
 
+## Weight-space alignment + flow matching (toy scale)
+
+`hcs-foundry generate --model flow-lab --method flow --corpus 101,202,303,404,505,606`, one hidden
+layer (16 → 24 → 4), 400 flow-matching steps, Euler integration with 40 steps:
+
+| Metric | Value |
+|---|---|
+| Alignment functional error (permutation validity) | 0.0 (exact) |
+| Reconstruction: relative parameter distance | **7e-06** |
+| Reconstruction accuracy vs trained checkpoint | identical on all seen tasks |
+| Sampling diversity (two draws, same condition) | 1.41 relative distance (not collapsed) |
+| Out-of-distribution generated accuracy | 0.250 (= chance) |
+| Random init accuracy | 0.250 |
+| Gradient-trained accuracy | 0.861 |
+| Wall clock | under 10 s |
+
+**Interpretation:** the generative machinery works — it reproduces checkpoints it has seen and does not
+collapse to a single output. It does **not** generalise to unseen tasks, because four training
+checkpoints are not a corpus. Reporting this as a success would be the exact overstatement this
+project exists to prevent; the D2NWG/DeepWeightFlow results rest on corpora three orders of magnitude
+larger.
+
 ## Resource estimate vs reality
 
 For the 250k transformer at batch 8 / block 16, the estimator predicts:

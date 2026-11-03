@@ -23,10 +23,25 @@ follows Semantic Versioning.
 * `RunRecord.kind` accepts `reinforcement`; the web types follow.
 * `Select` in the web UI now requires an accessible `label`, not an `aria-label` it silently dropped.
 
+### Added — weight-space generation
+
+* **Permutation alignment** (`alignment.py`): activation-correlation cost + Hungarian assignment,
+  exact functional verification, corpus alignment. Solver checked against brute force.
+* **Conditional flow matching** (`flow.py`): velocity field `v(x_t, t, descriptor)` over an aligned
+  checkpoint corpus, per-dimension target standardisation, Euler sampling, reconstruction *and*
+  out-of-distribution reporting, sampling-diversity diagnostic.
+* `hcs-foundry generate --method flow` and a new `flow-mlp` preset (one hidden layer).
+
+**Measured (and published):** reconstruction of training checkpoints at relative parameter distance
+7e-06; sampling diversity 1.41 (not collapsed); out-of-distribution accuracy **at chance**, a
+corpus-size limitation recorded in `docs/PERFORMANCE.md` rather than tuned away.
+
 ### Still unsupported
 
-DPO, PPO, RLHF, token-level GRPO over LLM completions, diffusion language models, latent image
-diffusion, quantisation, desktop packaging, and package publication.
+
+DPO, PPO, RLHF, token-level GRPO over LLM completions, D2NWG-scale weight diffusion, cross-architecture
+alignment, diffusion language models, latent image diffusion, quantisation, desktop packaging, and
+package publication.
 
 ## [0.1.0] — 2026-11-03
 

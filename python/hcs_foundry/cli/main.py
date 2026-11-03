@@ -445,14 +445,25 @@ def cmd_generate(args: argparse.Namespace) -> int:
         latent_dim=args.latent_dim,
         seed=args.seed,
     )
-    payload = foundry.generate(config)
+    payload = foundry.generate(config, method=args.method)
     if args.json:
         _print(payload, True)
         return EXIT_OK
-    print("weight generator (conditional hypernetwork, MLP target)")
+    print(f"weight generator ({payload['method']}, MLP target)")
+    if "alignment" in payload:
+        print(f"  alignment verified : {payload['alignment']['all_verified']}")
+    for entry in payload.get("in_distribution", []):
+        print(
+            f"  seen task {entry['task_seed']:<6} generated {entry['generated_accuracy']:.3f} "
+            f"vs trained {entry['trained_accuracy']:.3f} (distance {entry['relative_parameter_distance']:.2e})"
+        )
+    diversity = payload.get("sampling_diversity")
+    if diversity:
+        print(f"  sampling diversity : {diversity['relative_distance']:.2e} (collapsed={diversity['collapsed']})")
     print(f"  generated accuracy : {payload['generated_mean_accuracy']:.4f}")
     print(f"  random-init        : {payload['random_init_mean_accuracy']:.4f}")
     print(f"  gradient-trained   : {payload['gradient_trained_mean_accuracy']:.4f}")
+    print(f"  claim boundary     : {payload['claim_boundary']}")
     print(f"  report             : {payload['report_path']}")
     return EXIT_OK
 
@@ -724,6 +735,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     generate = sub.add_parser("generate", help="train a weight generator")
     generate.add_argument("--model", required=True)
+    generate.add_argument("--method", default="hypernetwork", choices=["hypernetwork", "flow"])
     generate.add_argument("--corpus", default=None, help="comma separated task seeds")
     generate.add_argument("--epochs", type=int, default=200)
     generate.add_argument("--latent-dim", type=int, default=8)
