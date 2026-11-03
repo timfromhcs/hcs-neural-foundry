@@ -45,6 +45,7 @@ from .schemas import (
     PatchOperation,
     PatchPrecondition,
     Provenance,
+    RlConfig,
     RunRecord,
     RunState,
     TensorSummary,
@@ -630,6 +631,32 @@ class Foundry:
             checkpoint_payload = record_out.model_dump(mode="json")
 
         return {"run_id": run.id, "report_sha256": sha, "report_path": str(path), "checkpoint": checkpoint_payload, **report["results"]}
+
+    # -- reinforcement learning ---------------------------------------------------------------
+    def run_rl(
+        self,
+        config: RlConfig,
+        *,
+        run_id: str | None = None,
+        progress: Any | None = None,
+    ) -> RunRecord:
+        """GRPO on a toy verifiable-reward environment (see ``docs/STATUS.md`` for the scope)."""
+        from .rl import ensure_environment, policy_to_run
+
+        env, _ = ensure_environment(
+            self.workspace,
+            context_dim=config.context_dim,
+            n_actions=config.n_actions,
+            seed=config.seed,
+        )
+        return policy_to_run(
+            workspace=self.workspace,
+            repository=self.repo,
+            env=env,
+            config=config,
+            run_id=run_id or new_id("run"),
+            progress=progress,
+        )
 
     # -- export ------------------------------------------------------------------------------
     def export(self, model_id: str, *, fmt: str = "onnx", checkpoint: str = "latest") -> dict[str, Any]:

@@ -109,15 +109,25 @@ Qin et al., *A survey on Quality-Diversity optimization*, Swarm and Evolutionary
 MAP-Elites keeps one elite per behaviour cell. Here the descriptors are score, latency and parameter
 count — the things a user choosing a small local model actually cares about.
 
-### 3.4 Reinforcement learning (not implemented)
+### 3.4 Reinforcement learning (toy GRPO implemented; LLM-scale RL unsupported)
 
 Reference points for the roadmap:
 * Wu, *A Comprehensive Survey on Learning from Rewards for LLMs*, ACL Findings EMNLP 2025.
 * TRL GRPO trainer docs: <https://huggingface.co/docs/trl/grpo_trainer>
 * Reward hacking in agentic systems, 2026: <https://link.springer.com/article/10.1007/s44163-026-01980-z>
 
-The last one is why the evaluator in this repo runs in a separate process with a read-only fixture
-directory: a stronger optimiser will exploit a weak reward, including by editing the test.
+What is implemented: GRPO — group-relative advantages, a frozen reference policy and a KL penalty —
+on a **toy contextual bandit with an exact verifiable reward**. In 100 steps it reaches 0.891 held-out
+accuracy against a 0.375 reference and 0.25 chance, and the saved policy is re-scored by a separate
+process against a sealed fixture. A test also tampers with the fixture and asserts the verifier refuses.
+
+What is deliberately not implemented: DPO, PPO, RLHF, or GRPO over token-level completions of the
+transformer. Those need rollouts, a reward model or a verifier over text, and a compute budget this
+build does not have. Reporting a 250k-parameter character model as "RLHF" would be the exact
+overstatement this project exists to avoid.
+
+The 2026 reward-hacking survey is the reason the evaluator runs in a separate process with a read-only
+fixture directory: a stronger optimiser will exploit a weak reward, including by editing the test.
 
 ---
 

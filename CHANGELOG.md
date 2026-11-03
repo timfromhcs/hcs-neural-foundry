@@ -3,6 +3,31 @@
 All notable changes to this project are documented here. Format follows Keep a Changelog; versioning
 follows Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+* **GRPO trainer** on a toy contextual bandit with an exact verifiable reward:
+  `hcs_foundry/rl.py`, `hcs-foundry rl grpo`, `POST /api/v1/reinforcement-runs`.
+  Group-relative advantages, frozen reference policy, KL penalty, exact-KL diagnostic.
+  0.891 held-out accuracy vs 0.375 reference on 256 unseen contexts.
+* **Sealed reward fixture**: written read-only, hash-pinned, and re-verified before scoring. A test
+  tampers with it and asserts the isolated verifier refuses to produce a score.
+* **Independent policy verification** in a child process (`hcs_foundry.rl_verify`).
+* **Automated accessibility gate**: six axe-core tests over Model Studio, Settings, Docs and API/MCP in
+  English and German. The first run found a real unlabelled-select bug, now fixed.
+* `scripts/scan_encoding.py` to catch replacement characters in tracked text files.
+
+### Changed
+
+* `RunRecord.kind` accepts `reinforcement`; the web types follow.
+* `Select` in the web UI now requires an accessible `label`, not an `aria-label` it silently dropped.
+
+### Still unsupported
+
+DPO, PPO, RLHF, token-level GRPO over LLM completions, diffusion language models, latent image
+diffusion, quantisation, desktop packaging, and package publication.
+
 ## [0.1.0] — 2026-11-03
 
 First vertical slice. Everything below is implemented in this tree; anything not listed is either

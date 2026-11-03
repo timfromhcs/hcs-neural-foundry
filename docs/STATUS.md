@@ -28,7 +28,8 @@ Last verified: 2026-11-03, on Windows 11 (Ryzen 7 7735HS, CPU-only torch 2.15.0,
 | Weight-space diffusion (D2NWG-like) | unsupported | interface slot only |
 | Flow matching (DeepWeightFlow-like) | unsupported | interface slot only |
 | LoRA fine-tuning of a pretrained base | unsupported | low-rank *edits* exist; no base model shipped |
-| DPO / PPO / GRPO trainers | unsupported | reward interface only |
+| GRPO trainer on a toy verifiable reward | experimental | `rl.py`: held-out 0.891 vs reference 0.375 on 256 unseen contexts |
+| DPO / PPO / RLHF / LLM-scale GRPO | unsupported | no token-level rollouts, reward model or compute budget |
 | Diffusion language model | unsupported | family slot reserved |
 | Latent image diffusion | unsupported | not attempted |
 | Quantisation | unsupported | not attempted |
@@ -49,6 +50,7 @@ Last verified: 2026-11-03, on Windows 11 (Ryzen 7 7735HS, CPU-only torch 2.15.0,
 
 | Capability | Status | Evidence |
 |---|---|---|
+| Automated accessibility audit | stable | 6 axe-core tests, 4 screens, 2 locales; caught a real unlabeled-select bug. Contrast stays manual (jsdom has no layout) |
 | Static build, no server functions | stable | `npm run build`, `dist/` only |
 | ONNX Runtime Web inference | experimental | verified in Chromium: WebGPU provider, 18.2 ms, argmax returned |
 | Provider fallback WebGPU → WASM | stable | probe runs a real inference before reporting |
@@ -65,6 +67,8 @@ Last verified: 2026-11-03, on Windows 11 (Ryzen 7 7735HS, CPU-only torch 2.15.0,
 | "The pipeline runs end to end" | yes | tests and reproducible commands |
 | "A 250k transformer learns the synthetic corpus" | yes, with the corpus named | val loss 2.30 vs 4.16 uniform baseline |
 | "Generated weights beat gradient training" | **no** | no fair comparison in this build |
+| "GRPO improved a held-out score" | yes, for the toy bandit only | 0.891 vs 0.375 on 256 unseen contexts, isolated verifier |
+| "RL post-training of a language model" | **no** | no rollout/reward infrastructure at token level |
 | "State of the art" | **no** | no external benchmark was run |
 | "WebGPU is supported" | only as "works for this graph in this browser" | measured once, per browser |
 | "The browser equals the desktop engine" | **no** | parity matrix says otherwise |
@@ -77,6 +81,10 @@ Last verified: 2026-11-03, on Windows 11 (Ryzen 7 7735HS, CPU-only torch 2.15.0,
 4. Browser training is one hidden layer by design.
 5. The demo ONNX model was trained for 40 steps; it demonstrates plumbing, not quality.
 6. WebGPU depends on the installed browser/GPU; the WASM path is the tested default.
+7. GRPO is demonstrated on a contextual bandit, not on the transformer; the reward is exact and the
+   environment is toy-sized on purpose.
+8. Accessibility is verified with axe-core; colour contrast is a manual check because jsdom has no
+   layout engine.
 
 ---
 

@@ -340,14 +340,22 @@ export function Select<T extends string>({
   onChange,
   options,
   id,
+  label,
 }: {
   value: T;
   onChange: (value: T) => void;
   options: { value: T; label: string }[];
   id?: string;
+  /** Accessible name. Required when the select is not wrapped in a <Field>. */
+  label: string;
 }) {
   return (
-    <select id={id} value={value} onChange={(event: ChangeEvent<HTMLSelectElement>) => onChange(event.target.value as T)}>
+    <select
+      id={id}
+      aria-label={label}
+      value={value}
+      onChange={(event: ChangeEvent<HTMLSelectElement>) => onChange(event.target.value as T)}
+    >
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}

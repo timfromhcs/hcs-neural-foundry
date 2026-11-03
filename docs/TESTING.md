@@ -2,7 +2,7 @@
 
 ## 1. What the suites cover
 
-### Python (`python/tests`, pytest, 86 tests)
+### Python (`python/tests`, pytest, 99 tests)
 
 | File | Focus |
 |---|---|
@@ -10,14 +10,16 @@
 | `test_workflows.py` | checkpoint round-trip and tie restoration, safetensors-only enforcement, every patch operation, non-finite rejection, training convergence, resume, cancel, evaluation suites, invalid-run handling, ES reproducibility, agent policy, dangerous-primitive scan |
 | `test_interfaces.py` | CLI contract and exit codes, API auth/CORS/rate-limit/error shape, background job lifecycle, MCP approval gate and tool registration/audit |
 | `test_generators.py` | leakage guard, non-MLP rejection, end-to-end generator run |
+| `test_rl.py` | reward exactness, sealed-fixture tampering, group advantages, GRPO improvement, KL-penalty trade-off, isolated verification |
 
-### Web (`apps/web/tests`, vitest, 34 tests)
+### Web (`apps/web/tests`, vitest, 40 tests)
 
 | File | Focus |
 |---|---|
 | `i18n.test.ts` | en/de/fr key parity, no empty or placeholder values, no HTML in strings, interpolation |
 | `mlp.test.ts` | deterministic init, forward shapes, training convergence, reproducibility, stop behaviour, every patch op, serialisation, interpolation, count formulas |
 | `db.test.ts` | IndexedDB round-trips, filtering, bundle export/import, foreign-JSON rejection |
+| `a11y.test.tsx` | axe-core audits of four screens in two locales; landmarks, skip link, single `h1` |
 
 ## 2. Running the gates
 
@@ -58,6 +60,8 @@ npm run build
 | WebGPU in CI | Browser/GPU dependent | provider is only reported after a real inference; WASM is the tested fallback |
 | Real benchmark scores (LiveBench, BFCL, …) | Requires network, licences, harnesses | suites are named `*-smoke` and documented as pipeline checks |
 | Full desktop packaging | Not built in this session | declared unsupported in `docs/STATUS.md` |
+| Colour contrast (automated) | jsdom has no layout engine | manual token review; stated in `docs/STATUS.md` |
+| LLM-scale RL | no rollout/reward infra at token level | toy bandit environment covers the algorithm, labelled as such |
 | Long-running training correctness | Time budget | smoke runs assert convergence direction, not final quality |
 
 ## 5. Anti-regression rules
@@ -80,6 +84,24 @@ npm run build
 * Latency and memory measurements are wall-clock/allocator observations and are explicitly excluded
   from reproducibility assertions.
 
-## 7. Evidence from the last full run
+## 7. Accessibility gate
+
+`apps/web/tests/a11y.test.tsx` renders the Model Studio, Settings, Docs and API/MCP screens inside the
+real shell, in English and German, and runs axe-core with `color-contrast` and `region` disabled. Only
+`serious` and `critical` violations fail the build. The first run of this test found a genuine bug — the
+sidebar language selector had no accessible name because the `Select` component dropped `aria-label` —
+which is the point of having the gate.
+
+## 8. Reinforcement-learning gate
+
+`test_rl.py` asserts three different things:
+
+1. the reward is exact and the sealed fixture refuses to be edited (hash + read-only file);
+2. the GRPO mechanics are right (group advantages standardise to unit scale, identical rewards produce
+   zero advantage, the KL penalty demonstrably trades reward for proximity);
+3. a short run improves held-out accuracy over its own reference policy, and the saved policy is
+   re-scored in a separate process.
+
+## 9. Evidence from the last full run
 
 Recorded in `docs/PERFORMANCE.md` (numbers, machine, date). Regenerate with `scripts/verify.ps1`.

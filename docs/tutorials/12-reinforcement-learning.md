@@ -27,9 +27,9 @@ KL penalty keeps `π` close to `π_ref`; without it, the model collapses onto th
 ## Run it
 
 ```powershell
-# The evaluator fixtures and reward interface exist; no RL trainer is shipped.
-hcs-foundry eval --model lesson-3 --suite weight-sanity
-hcs-foundry proposal create --model lesson-3 --agent agent:demo --goal "shrink norms" --tensor blocks.0.attn.q_proj.weight --op scale --params '{"factor":0.95}'
+# GRPO on the toy verifiable-reward environment (bandit, not an LLM)
+hcs-foundry rl grpo --steps 100 --lr 0.2 --kl-beta 0.01 --seed 3
+hcs-foundry history --kind reinforcement
 ```
 
 ## Exercise
@@ -38,7 +38,8 @@ Write the reward function you would use for a verifiable task, then write the ex
 
 ## What you should observe
 
-Proposals are immutable and the verifier runs in a separate process — the structure that makes reward tampering hard.
+Held-out accuracy rises well above the reference policy and chance; the run records an
+isolated verification and a claim boundary. Proposals are immutable and the verifier runs in a separate process — the structure that makes reward tampering hard.
 
 ## Common mistake
 

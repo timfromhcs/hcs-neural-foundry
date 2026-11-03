@@ -196,6 +196,19 @@ def test_sse_endpoint_requires_token(client):
     assert client.get("/api/v1/events/run_missing").status_code == 401
 
 
+def test_reinforcement_endpoint_records_a_run(client):
+    response = client.post(
+        "/api/v1/reinforcement-runs",
+        headers=auth_headers(),
+        json={"steps": 20, "group_size": 8, "lr": 0.2, "kl_beta": 0.01, "seed": 1},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["kind"] == "reinforcement"
+    assert body["state"] == "completed"
+    assert body["summary"]["held_out"]["chance_accuracy"] == 0.25
+
+
 def test_artifact_endpoint_serves_content_addressed_files(client, foundry):
     from hcs_foundry.checkpoints import write_artifact
 

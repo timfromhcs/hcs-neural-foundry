@@ -457,6 +457,48 @@ def cmd_generate(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_rl(args: argparse.Namespace) -> int:
+    from ..schemas import RlConfig
+
+    foundry = _foundry(args)
+    config = RlConfig(
+        env_id="rule-bandit",
+        steps=args.steps,
+        group_size=args.group_size,
+        batch_contexts=args.batch_contexts,
+        lr=args.lr,
+        kl_beta=args.kl_beta,
+        seed=args.seed,
+        context_dim=args.context_dim,
+        n_actions=args.n_actions,
+        eval_contexts=args.eval_contexts,
+    )
+
+    def progress(entry: dict[str, object]) -> None:
+        if args.json:
+            print(json.dumps(entry), flush=True)
+        else:
+            print(
+                f"step {entry['step']:>5} loss {entry['loss']:>9} kl {entry['kl']:>8} "
+                f"reward {entry['mean_reward']:.3f}",
+                flush=True,
+            )
+
+    run = foundry.run_rl(config, progress=progress)
+    if args.json:
+        _print(run.model_dump(mode="json"), True)
+        return EXIT_OK
+    held_out = run.summary.get("held_out", {})
+    print(f"run {run.id} finished with state '{run.state.value}'")
+    print(f"  held-out accuracy : {held_out.get('policy_accuracy')}")
+    print(f"  reference policy  : {held_out.get('reference_accuracy')}")
+    print(f"  chance            : {held_out.get('chance_accuracy')}")
+    print(f"  isolated verifier : {run.summary.get('isolated_verification', {}).get('state')}")
+    print(f"  policy artifact   : {run.summary.get('artifact')}")
+    print(f"  claim boundary    : {run.summary.get('claim_boundary')}")
+    return EXIT_OK
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     foundry = _foundry(args)
     payload = foundry.export(args.model, fmt=args.format, checkpoint=args.checkpoint)
@@ -723,6 +765,20 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_verify.add_argument("--proposal", required=True)
     proposal_verify.add_argument("--suite", default="weight-sanity")
     proposal_verify.set_defaults(func=cmd_proposal_verify)
+
+    rl = sub.add_parser("rl", help="reinforcement learning with verifiable rewards")
+    rl_sub = rl.add_subparsers(dest="rl_command", required=True)
+    rl_grpo = rl_sub.add_parser("grpo", help="GRPO on the toy rule-bandit environment")
+    rl_grpo.add_argument("--steps", type=int, default=200)
+    rl_grpo.add_argument("--group-size", type=int, default=8)
+    rl_grpo.add_argument("--batch-contexts", type=int, default=16)
+    rl_grpo.add_argument("--lr", type=float, default=0.1)
+    rl_grpo.add_argument("--kl-beta", type=float, default=0.02)
+    rl_grpo.add_argument("--seed", type=int, default=0)
+    rl_grpo.add_argument("--context-dim", type=int, default=6)
+    rl_grpo.add_argument("--n-actions", type=int, default=4)
+    rl_grpo.add_argument("--eval-contexts", type=int, default=256)
+    rl_grpo.set_defaults(func=cmd_rl)
 
     api = sub.add_parser("api", help="local HTTP API")
     api.add_argument("--host", default="127.0.0.1")

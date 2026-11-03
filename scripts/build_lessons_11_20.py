@@ -39,9 +39,9 @@ The failure mode that matters is reward hacking: a strong optimiser will find th
 increase the score, including editing the test.""",
         """GRPO advantage for completion `i`: `A_i = (r_i - mean(r)) / std(r)`.
 KL penalty keeps `π` close to `π_ref`; without it, the model collapses onto the reward's quirks.""",
-        """# The evaluator fixtures and reward interface exist; no RL trainer is shipped.
-hcs-foundry eval --model lesson-3 --suite weight-sanity
-hcs-foundry proposal create --model lesson-3 --agent agent:demo --goal "shrink norms" --tensor blocks.0.attn.q_proj.weight --op scale --params '{"factor":0.95}'""",
+        """# GRPO on the toy verifiable-reward environment (bandit, not an LLM)
+hcs-foundry rl grpo --steps 100 --lr 0.2 --kl-beta 0.01 --seed 3
+hcs-foundry history --kind reinforcement""",
         "Write the reward function you would use for a verifiable task, then write the exploit a policy would find.",
         "Proposals are immutable and the verifier runs in a separate process — the structure that makes reward tampering hard.",
         "Reporting reward improvement as capability improvement. Reward is a proxy; held-out task success is the measurement.",

@@ -22,12 +22,14 @@ honestly, reproducibly, and without a hidden cloud backend.
 | Supervised training with real backprop + AdamW, checkpoint/resume/cancel, telemetry | stable | `hcs-foundry train` |
 | Evaluation on deterministic smoke suites with full provenance | stable | `hcs-foundry eval` |
 | Evolution Strategies + MAP-Elites archive on a tiny model | experimental | `hcs-foundry evolve` |
+| GRPO on a toy verifiable-reward environment with sealed fixture | experimental | `hcs-foundry rl grpo` |
 | Hypernetwork weight generator for a fixed tiny MLP | experimental | `hcs-foundry generate` |
 | ONNX export + inference parity check | experimental | `hcs-foundry export` |
 | Local HTTP API with token auth, strict CORS, rate limits | stable | `hcs-foundry api serve` |
 | MCP server (stdio) with read-only + approval-gated tools | experimental | `hcs-foundry mcp serve` |
 | Static browser app with ONNX Runtime Web, IndexedDB history, local demo trainer | experimental | `apps/web` |
-| Preference/RL training (DPO/PPO/GRPO), diffusion text, latent image diffusion | unsupported | roadmap |
+| Automated accessibility audit (axe-core, 4 screens × 2 locales) | stable | `apps/web/tests/a11y.test.tsx` |
+| LLM-scale RL (DPO/PPO/RLHF), diffusion text, latent image diffusion | unsupported | roadmap |
 | Desktop shell (Tauri), PyPI/npm publication | unsupported in this tree | roadmap |
 
 ## Quick start (Windows PowerShell)

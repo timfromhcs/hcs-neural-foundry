@@ -79,6 +79,25 @@ task, backpropagation is markedly more sample-efficient than ES. The archive fou
 which is the reason to keep ES in the toolbox — diversity, not raw sample efficiency. Wall-clock time
 is not equalised in either direction.
 
+## GRPO on the toy verifiable-reward environment
+
+`hcs-foundry rl grpo --steps 100 --lr 0.2 --kl-beta 0.01 --seed 3`, 6 context features, 4 actions,
+8 samples per context, 16 contexts per step:
+
+| Metric | Value |
+|---|---|
+| Held-out accuracy (256 unseen contexts, separate process) | **0.891** |
+| Reference policy at the same seed | 0.375 |
+| Chance | 0.250 |
+| Training reward (last step) | 0.906 |
+| Exact KL to reference (last step) | 1.24 nats |
+| Wall clock | ~4 s |
+| Policy artifact | JSON, ~1 kB, hashed |
+
+**Interpretation, stated plainly:** this validates the GRPO implementation and the reward-pipeline
+integrity. It says nothing about language-model post-training. A large KL penalty does what it should:
+at `kl_beta=10` the policy stays close to the reference (exact KL 0.33) and gives up reward (0.336).
+
 ## Resource estimate vs reality
 
 For the 250k transformer at batch 8 / block 16, the estimator predicts:

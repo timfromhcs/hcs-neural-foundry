@@ -33,6 +33,8 @@ three interfaces from drifting apart in behaviour or policy.
 | `training/*` | Datasets, trainer lifecycle, AdamW/SGD, resume, dry-run, telemetry | run an evaluator |
 | `evaluation.py` | Suites with metric definitions, provenance, `invalid` on evaluator failure | let a caller pass a bare score |
 | `evolution.py` | Antithetic ES, MAP-Elites, example-matched gradient baseline | search huge raw parameter vectors |
+| `rl.py` | GRPO on a toy contextual bandit, sealed reward fixture, policy artifact, isolated verification | claim LLM post-training; read the sealed rule from the policy's side |
+| `rl_verify.py` | Separate-process policy scorer that re-checks the fixture hash | share objects with the trainer |
 | `generators.py` | Conditional hypernetwork over task descriptors, leakage guard | pretend to implement diffusion/flow matching |
 | `exporting.py` | ONNX export + parity check against the native model | claim parity without running the graph |
 | `agents.py` | Policy, proposal construction, isolated verifier subprocess | give an agent a tensor handle |

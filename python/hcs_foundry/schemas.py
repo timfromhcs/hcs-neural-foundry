@@ -654,7 +654,7 @@ class RunRecord(BaseModel):
 
     schema_version: str = SCHEMA_VERSION
     id: str
-    kind: Literal["training", "evaluation", "evolution", "generation", "export"]
+    kind: Literal["training", "evaluation", "evolution", "generation", "export", "reinforcement"]
     model_id: str
     state: RunState = RunState.QUEUED
     config: dict[str, Any] = Field(default_factory=dict)
@@ -753,6 +753,24 @@ class EvolutionConfig(BaseModel):
     evaluations_per_candidate: int = Field(1, ge=1, le=16)
     baseline_steps: int = Field(0, ge=0, le=100_000)
     dataset_id: str = "tiny-text"
+
+
+class RlConfig(BaseModel):
+    """GRPO on a toy verifiable-reward environment (not language-model post-training)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    env_id: str = "rule-bandit"
+    steps: int = Field(200, ge=1, le=20_000)
+    group_size: int = Field(8, ge=2, le=64)
+    batch_contexts: int = Field(16, ge=1, le=1024)
+    lr: float = Field(0.1, gt=0, le=10)
+    kl_beta: float = Field(0.02, ge=0, le=10)
+    seed: int = Field(0, ge=0, le=2**31 - 1)
+    eval_contexts: int = Field(256, ge=8, le=100_000)
+    max_contexts: int = Field(20_000, ge=1, le=10_000_000)
+    context_dim: int = Field(6, ge=2, le=1024)
+    n_actions: int = Field(4, ge=2, le=1024)
 
 
 class GeneratorConfig(BaseModel):

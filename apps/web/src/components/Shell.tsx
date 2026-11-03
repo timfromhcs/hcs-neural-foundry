@@ -95,7 +95,7 @@ export function Shell({
         <div className="spacer" />
         <div className="stack" style={{ gap: "var(--space-2)" }}>
           <Select<Locale>
-            aria-label={t("settings.language")}
+            label={t("settings.language")}
             value={locale}
             onChange={setLocale}
             options={LOCALES.map((code) => ({ value: code, label: LOCALE_LABEL[code] }))}

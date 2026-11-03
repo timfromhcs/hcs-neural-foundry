@@ -183,6 +183,16 @@ class EvolutionRequest(BaseModel):
     seed: int = 0
 
 
+class RlRequest(BaseModel):
+    steps: int = Field(200, ge=1, le=20_000)
+    group_size: int = Field(8, ge=2, le=64)
+    batch_contexts: int = Field(16, ge=1, le=1024)
+    lr: float = Field(0.1, gt=0, le=10)
+    kl_beta: float = Field(0.02, ge=0, le=10)
+    seed: int = Field(0, ge=0)
+    eval_contexts: int = Field(256, ge=8, le=100_000)
+
+
 class GenerateRequest(BaseModel):
     target_model_id: str
     corpus: list[int] = Field(default_factory=lambda: [11, 22, 33, 44, 55, 66, 77, 88])
@@ -549,6 +559,15 @@ def create_app(
     def generators(payload: GenerateRequest, request: Request) -> dict[str, Any]:
         limiter.check(f"{request.client.host if request.client else 'local'}:generate")
         return foundry.generate(GeneratorConfig(**payload.model_dump()))
+
+    @app.post("/api/v1/reinforcement-runs", dependencies=[Depends(auth)])
+    def start_rl(payload: RlRequest, request: Request) -> dict[str, Any]:
+        from .schemas import RlConfig
+
+        limiter.check(f"{request.client.host if request.client else 'local'}:rl")
+        config = RlConfig(**payload.model_dump())
+        run = foundry.run_rl(config)
+        return run.model_dump(mode="json")
 
     @app.post("/api/v1/proposals", dependencies=[Depends(auth)])
     def create_proposal(payload: ProposalRequest) -> dict[str, Any]:

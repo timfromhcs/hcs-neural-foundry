@@ -139,8 +139,19 @@ WITH DECLARED GAPS.**
 
 ## Phase 9 — Reward / RL trainers
 
-- [!] DPO / PPO / GRPO: unsupported. Reward *fixtures* and the isolation structure exist and are
-      tested; no RL trainer is claimed. Documented in `docs/RESEARCH.md` §3.4.
+- [x] Reward interface with an exact verifiable reward and a **sealed fixture**: the rule is written
+      read-only, hash-pinned, and re-verified before scoring.
+- [x] GRPO: group-relative advantages, frozen reference policy, KL penalty, gradient clipping, and an
+      exact-KL diagnostic beside the sampled estimator used in the loss.
+- [x] Independent verification: the saved policy is re-scored in a separate process; a test tampers
+      with the fixture and asserts the verifier refuses to score.
+- [x] Measured result: 0.891 held-out accuracy on 256 unseen contexts vs 0.375 reference, 0.250
+      chance, ~4 s. `hcs-foundry rl grpo` and `POST /api/v1/reinforcement-runs`.
+- [!] DPO, PPO, RLHF and GRPO over token-level LLM completions: still unsupported. They need rollout
+      infrastructure, a reward model or text verifier, and a compute budget this build does not have.
+
+Gate: toy environment runs, the evaluator is independent, and the reward is checked against held-out
+task success. **PASSED (toy scope, labelled).**
 
 ## Phase 10 — Agent Lab and MCP
 
@@ -180,13 +191,15 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 
 ## Phase 13 — QA gates
 
-- [x] 86 pytest tests, 34 vitest tests, ruff clean, TypeScript strict clean.
+- [x] 99 pytest tests, 40 vitest tests, ruff clean, TypeScript strict clean.
 - [x] Numerical checks: gradient reachability, parameter-count equality, ONNX parity, patch finiteness.
 - [x] Security tests: auth, CORS, rate limit, approval gate, dangerous-primitive scan.
 - [x] i18n parity test.
 - [x] Manual keyboard + responsive checks (390 px and desktop) via a real browser; no horizontal
       overflow measured.
-- [~] Automated accessibility audit (axe) not run; manual checks documented in `docs/PERFORMANCE.md`.
+- [x] Automated accessibility audit: 6 axe-core tests over 4 screens in 2 locales. The first run found
+      a real bug (unlabelled sidebar select), now fixed.
+- [~] Colour contrast stays a manual check: jsdom has no layout engine, so axe cannot evaluate it.
 - [x] End-to-end smoke workflow in `scripts/verify.ps1`.
 
 ## Phase 14 — Publish
@@ -201,13 +214,14 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 
 | Deliverable | Count / result |
 |---|---|
-| Python modules | 30 files (engine, storage, interfaces, verifier) |
-| Python tests | 86 passed |
-| Web tests | 34 passed |
-| CLI leaf commands | 26 |
+| Python modules | 32 files (engine, storage, interfaces, verifier) |
+| Python tests | 99 passed |
+| Web tests | 40 passed (incl. 6 accessibility audits) |
+| CLI leaf commands | 27 |
 | MCP tools | 20 (13 read-only, 7 gated) |
-| API endpoints | 33 |
+| API endpoints | 34 |
 | Weight operations | 12 (engine) + 5 (browser) |
+| RL environments | 1 (rule-bandit, sealed fixture) |
 | Lessons | 20 |
 | ADRs | 16 |
 | Bundle (gzip) | ~109 kB JS + 3.5 kB CSS + 29.5 MB ONNX runtime WASM |
@@ -215,10 +229,10 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 ## Backlog (explicitly open, not forgotten)
 
 1. Diffusion / flow-matching weight generators with real corpus + Git Re-Basin alignment.
-2. DPO/GRPO trainer and a verifiable-reward environment.
+2. DPO/PPO/RLHF and token-level GRPO over transformer completions (the bandit covers the algorithm).
 3. Masked diffusion language model trainer/sampler.
 4. Tauri desktop shell + single-file launcher; npm/PyPI publication with provenance.
-5. Automated axe accessibility audit and visual regression snapshots.
+5. Visual regression snapshots (axe is in place; pixel diffs are not).
 6. WebGPU operator coverage matrix per model family.
 7. External benchmark adapters (LiveBench, BFCL) with protocol files.
 
