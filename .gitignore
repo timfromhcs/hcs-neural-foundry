@@ -43,3 +43,7 @@ workspace/
 # OS
 Thumbs.db
 .DS_Store
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
