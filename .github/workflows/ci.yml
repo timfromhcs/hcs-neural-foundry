@@ -25,7 +25,9 @@ jobs:
       - run: uv venv .venv --python 3.12
       - name: Install (Linux)
         if: runner.os == 'Linux'
-        run: uv pip install --python .venv/bin/python -e ".[torch,export,mcp,dev]" --extra-index-url https://download.pytorch.org/whl/cpu
+        # The PyTorch CPU index also carries stale copies of common packages (e.g. idna 3.4), and uv
+        # refuses to mix versions across indexes by default. Both indexes are trusted, so allow it.
+        run: uv pip install --python .venv/bin/python -e ".[torch,export,mcp,dev]" --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
       - name: Install (Windows)
         if: runner.os == 'Windows'
         run: uv pip install --python .venv\Scripts\python.exe -e ".[torch,export,mcp,dev]"
