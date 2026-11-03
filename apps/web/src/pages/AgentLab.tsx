@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useI18n, useT } from "../i18n";
 import { applyPatch, deserializeMlp, evaluate, patchEffect, serializeMlp, tensorStats, type PatchOp, type TensorName } from "../lib/mlp";
-import { shortHash } from "../lib/format";
 import { useApp } from "../state";
 import { Alert, Card, Field, PageHead, Stat } from "../components/ui";
 import type { ModelRecord } from "../lib/types";
@@ -212,7 +211,7 @@ export function AgentLabPage() {
                   <Stat label={`${t("train.accuracy")} (after)`} value={`${(outcome.after * 100).toFixed(1)}%`} />
                 </div>
                 <p className="tiny faint">
-                  {t("weights.changed")}: {outcome.changed} · {shortHash(String(outcome.changed))}
+                  {t("weights.changed")}: {outcome.changed}
                 </p>
               </>
             )}

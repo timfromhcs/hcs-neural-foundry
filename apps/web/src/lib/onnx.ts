@@ -42,7 +42,7 @@ async function loadOrt(): Promise<OrtModule> {
     ortPromise = import("onnxruntime-web").then((module) => {
       // Vite rewrites the runtime's own wasm URL to a bundled asset, so no CDN is involved.
       module.env.wasm.numThreads = 1;
-      module.env.logLevel = "error";
+      module.env.logLevel = "fatal"; // ORT logs provider warnings at error level; keep the console clean
       return module;
     });
   }
