@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1.0",
   "generatedFor": "hcs-neural-foundry",
+  "release": "0.2.0",
   "date": "2026-11-03",
   "legend": {
     "pass": "verified by an automated check or a recorded measurement",
@@ -118,12 +119,14 @@
     {
       "area": "MCP",
       "requirement": "Read-only and approval-gated tools work with a conforming client",
-      "status": "declared",
+      "status": "pass",
       "evidence": [
         "python/tests/test_interfaces.py::test_mcp_server_registers_read_and_gated_tools",
-        "python/tests/test_interfaces.py::test_mcp_tool_calls_are_audited"
+        "python/tests/test_interfaces.py::test_mcp_tool_calls_are_audited",
+        "python/tests/test_interfaces.py::test_mcp_sdk_major_version_is_two",
+        "python/tests/test_interfaces.py::test_mcp_cli_forwards_approvals"
       ],
-      "limitation": "Verified through the SDK's in-process client, not an external host application"
+      "limitation": "Verified end-to-end over stdio with the SDK v2 Client against a real subprocess (20 tools, 3 resources, 3 prompts). No third-party host application was exercised."
     },
     {
       "area": "Local API",
@@ -158,13 +161,14 @@
     },
     {
       "area": "Browser",
-      "requirement": "Static site runs ONNX WASM; WebGPU only after a successful inference",
-      "status": "declared",
+      "requirement": "Static site runs ONNX on WASM and on WebGPU only after a successful inference",
+      "status": "pass",
       "evidence": [
         "docs/PERFORMANCE.md",
-        "apps/web/tests/mlp.test.ts"
+        "apps/web/tests/mlp.test.ts",
+        "apps/web/tests/onnx.test.ts"
       ],
-      "limitation": "Verified in one Chromium instance; WebGPU reported as experimental"
+      "limitation": "Measured in one Chromium instance (Chrome 156) on one integrated GPU (amd/rdna-2). WebGPU is measured, not guaranteed on other hardware; WASM remains the tested default."
     },
     {
       "area": "Browser storage",

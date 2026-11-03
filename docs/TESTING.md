@@ -2,7 +2,7 @@
 
 ## 1. What the suites cover
 
-### Python (`python/tests`, pytest, 118 tests)
+### Python (`python/tests`, pytest, 121 tests)
 
 | File | Focus |
 |---|---|
@@ -14,7 +14,7 @@
 | `test_alignment.py` | Hungarian solver vs brute force, rectangular matrices, exact permutation recovery, corpus alignment |
 | `test_flow.py` | loss decrease and determinism, sampling, layout round-trip, end-to-end reconstruction + honest boundaries |
 
-### Web (`apps/web/tests`, vitest, 40 tests)
+### Web (`apps/web/tests`, vitest, 48 tests)
 
 | File | Focus |
 |---|---|

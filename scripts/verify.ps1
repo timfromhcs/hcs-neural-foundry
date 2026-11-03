@@ -31,18 +31,40 @@ function Invoke-Gate {
     Write-Host ""
     Write-Host "=== $Name ===" -ForegroundColor Cyan
     $start = Get-Date
+
+    # Two PowerShell traps this guards against:
+    #  * a native tool writing to stderr (vite does) becomes a terminating error when
+    #    $ErrorActionPreference is Stop — we only care about its exit code;
+    #  * $LASTEXITCODE persists across gates, so a pure-PowerShell gate inherits the previous
+    #    command's failure. Reset it, and treat "no native command ran" as success.
+    $global:LASTEXITCODE = 0
+    $status = 0
+    $failure = $null
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
         & $Action
-        if ($LASTEXITCODE -ne 0) { throw "exit code $LASTEXITCODE" }
-        $elapsed = (Get-Date) - $start
-        $timings.Add([pscustomobject]@{ Gate = $Name; Seconds = [math]::Round($elapsed.TotalSeconds, 2); Status = "pass" })
-        Write-Host "PASS  $Name ($([math]::Round($elapsed.TotalSeconds, 2)) s)" -ForegroundColor Green
+        $status = $LASTEXITCODE
+        if ($null -eq $status) { $status = 0 }
     }
     catch {
-        $elapsed = (Get-Date) - $start
+        $status = 1
+        $failure = $_.Exception.Message
+    }
+    finally {
+        $ErrorActionPreference = $previous
+    }
+
+    $elapsed = (Get-Date) - $start
+    if ($status -ne 0) {
+        $reason = if ($failure) { $failure } else { "exit code $status" }
         $timings.Add([pscustomobject]@{ Gate = $Name; Seconds = [math]::Round($elapsed.TotalSeconds, 2); Status = "FAIL" })
-        Write-Host "FAIL  $Name : $_" -ForegroundColor Red
-        $failures.Add("$Name : $_")
+        Write-Host "FAIL  $Name : $reason" -ForegroundColor Red
+        $failures.Add("$Name : $reason")
+    }
+    else {
+        $timings.Add([pscustomobject]@{ Gate = $Name; Seconds = [math]::Round($elapsed.TotalSeconds, 2); Status = "pass" })
+        Write-Host "PASS  $Name ($([math]::Round($elapsed.TotalSeconds, 2)) s)" -ForegroundColor Green
     }
 }
 

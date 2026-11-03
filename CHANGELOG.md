@@ -3,9 +3,61 @@
 All notable changes to this project are documented here. Format follows Keep a Changelog; versioning
 follows Semantic Versioning.
 
-## [Unreleased]
+## [0.2.0] — 2026-11-03
 
-### Added
+First published release. Two dependency drifts were found by auditing the tree against current
+upstream documentation, and both invalidated a headline claim; both are fixed here.
+
+### Fixed — protocol and runtime drift
+
+* **MCP server migrated to SDK v2** (`mcp>=2.3,<3`). `FastMCP` was renamed to `MCPServer` in SDK
+  v2.0.0 (released 2026-07-28) and `mcp.server.fastmcp` no longer exists, so the old import silently
+  pinned the server to the v1 maintenance line. The server now speaks the 2026-07-28 revision and
+  still serves 2025-era clients.
+* **Verified against a real client, not just in-process.** A new end-to-end probe connects over
+  stdio with the SDK v2 `Client` and asserts 20 tools, 3 resources, 3 prompts, a working read tool and
+  a gated tool that refuses without approval.
+* **`hcs-foundry mcp serve --approve TOOL` actually works.** The CLI accepted no `--approve` and no
+  positional, so approval was only possible through `HCS_FOUNDRY_MCP_APPROVE`. The documented
+  flag now exists, is repeatable, and is forwarded to the server.
+* **Browser runtime moved to the native WebGPU execution provider.** `onnxruntime-web` deprecated
+  WebGL and JSEP in v1.29.0 (microsoft/onnxruntime#29716); the bare entry point resolved to JSEP.
+  The app now imports `onnxruntime-web/webgpu`. The build proves it: the bundled wasm changed from
+  `ort-wasm-simd-threaded.jsep-*.wasm` to `ort-wasm-simd-threaded.asyncify-*.wasm` plus
+  `ort.webgpu.bundle.min-*.js`, at essentially unchanged bundle size (108.7 kB gzip JS).
+
+### Fixed — behaviour that did not match the UI
+
+* **The provider setting was inert on the Dashboard.** It hard-coded `"auto"` in both `backendStatus`
+  and `runDemoModel`, so choosing WASM in Settings changed nothing. It now honours the preference, and
+  the cached session is rebuilt when the preference changes.
+* **A provider switch could hang the UI forever.** Moving WASM → WebGPU in one page left the runtime
+  half-initialised and the probe spun indefinitely. Every provider attempt is now bounded (20 s) and a
+  timeout is reported as a normal fallback reason.
+* **ONNX Runtime advisory noise is no longer logged as console errors.** Two "some nodes were not
+  assigned to the preferred EP" messages per session were emitted at error level; sessions now set
+  `logSeverityLevel: 3`. Measured result: 0 console errors on the Dashboard.
+
+### Changed — claims now match measurements
+
+* WebGPU is reported only after a real inference ran on it, and only when `requestAdapter()` returned
+  an adapter — API presence alone is no longer treated as support.
+* The browser performance claim was re-measured on the new code path and it changed the conclusion:
+  see `docs/PERFORMANCE.md`. For the shipped 250k-parameter demo, **WASM warm is ~6× faster than
+  WebGPU warm**, and WebGPU pays a 0.25–0.4 s cold start. The previous "WebGPU is fast" framing is
+  retired.
+
+### Added — release engineering
+
+* `scripts/release.ps1`: one command, all gates, fail-fast, printable table.
+* `scripts/verify_release.py` rewritten: version consistency across four files, changelog entry for
+  the current version, brand credit, acceptance-matrix integrity, MCP SDK major-version agreement
+  with the pin, encoding scan, and a check that the built site references no external origin.
+* `.github/workflows/release.yml`: build wheel + SBOM + checksums on a tag. It attaches artifacts and
+  does **not** publish to a registry.
+* `docs/ROADMAP-0.2.0.md`: the milestone contract, including the research that forced the two fixes.
+
+### Added — previously unreleased work folded into this version
 
 * **GRPO trainer** on a toy contextual bandit with an exact verifiable reward:
   `hcs_foundry/rl.py`, `hcs-foundry rl grpo`, `POST /api/v1/reinforcement-runs`.

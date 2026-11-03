@@ -38,8 +38,8 @@ evaluate → export ONNX → write manifest) completes in **8.7 s** end to end.
 
 | Gate | Result | Time |
 |---|---|---|
-| `pytest python/tests` | 85 passed | 25.5 s |
-| `npm test` (vitest) | 34 passed | 13.2 s |
+| `pytest python/tests` | 121 passed | 25.5 s |
+| `npm test` (vitest) | 48 passed | 62.0 s |
 | `npm run build` (typecheck + vite) | success | 4.8 s |
 | `ruff check python` | clean | < 1 s |
 
@@ -48,14 +48,39 @@ The slowest single test is the generator end-to-end run (training several tiny M
 
 ## Browser measurements (Chromium)
 
+Re-measured on **2026-11-03, 23:05–23:09** after the runtime moved to the native WebGPU EP
+(`onnxruntime-web/webgpu`). Browser: Chrome 156 (Playwright-driven Chromium), Windows 11,
+adapter reported by `requestAdapter()`: **amd / rdna-2** (Radeon 680M). Model: the shipped
+`demo-char-lm.onnx`, 250,432 parameters, 8-token prompt.
+
 | Measurement | Value | Where |
 |---|---|---|
-| ONNX Runtime provider selected | **WebGPU** (after a real smoke inference) | Dashboard → Run |
-| Single inference latency | **18.2 ms** for 8 prompt tokens, 250k model | Dashboard |
+| Provider selected with preference `auto` | **WebGPU (native EP)** after a real inference | Dashboard |
+| WebGPU — cold, first inference | **383.5 ms** (includes shader compilation) | Dashboard |
+| WebGPU — cold after a provider switch | 247.3 ms | Dashboard |
+| WebGPU — warm, n=4 | 15.4 / 16.1 / 17.5 / 22.1 ms, median **~16.8 ms** | Dashboard |
+| WebGPU — session load reported by the app | 237–544 ms | Dashboard |
+| WASM — cold, first inference | 10.8 ms | Dashboard |
+| WASM — warm, n=6 | 2.0 / 2.6 / 2.6 / 2.7 / 2.9 / 2.9 ms, median **2.7 ms** | Dashboard |
+| WASM — session load reported by the app | 990–1090 ms | Dashboard |
+| Console errors during the run | **0** (was 4 before `logSeverityLevel: 3`) | Playwright console |
+| Runtime WASM asset | 28.7 MB (`ort-wasm-simd-threaded.asyncify`, native EP build) | `dist/assets` |
 | ONNX model size | 1.15 MB (fp32) | `demo-manifest.json` |
-| Runtime WASM asset | 29.5 MB (jsep, includes WebGPU + CPU) | `dist/assets` |
+
+**The honest conclusion, which reverses the previous one:** at this model size **WASM warm is about
+6× faster than WebGPU warm**, and WebGPU pays a 0.25–0.4 s cold start for shader compilation. The
+per-inference GPU dispatch overhead dominates when the graph is 250k parameters. WebGPU is the
+supported path and it works, but for this model it is not the fast path. The earlier "18.2 ms on
+WebGPU" figure was taken on the deprecated JSEP backend and is retired.
+
+What this does **not** say: that WebGPU is slower in general. Larger graphs amortise dispatch cost;
+this measurement covers one small graph on one integrated GPU. A measured matrix across model sizes
+is backlog item 6 in `plan.md`.
+
+| Other browser measurements | Value | Where |
+|---|---|---|
 | Browser MLP training | 200 steps, batch 16, hidden 24 | Training Lab |
-| — wall clock | **105 ms** | run summary |
+| — wall clock | 105 ms | run summary |
 | — train loss | 0.737 (last batch) | run summary |
 | — validation loss | 0.625 | run summary |
 | — held-out accuracy | **76.6%** (chance 25%) | run summary |

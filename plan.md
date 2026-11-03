@@ -7,7 +7,7 @@ forgotten — it is a decision, with the reason written next to it.
 Legend: `[x]` done and verified · `[~]` done but narrow (declared experimental) · `[!]` not implemented,
 declared unsupported · `[ ]` open backlog.
 
-Last updated: 2026-11-03 (session 1).
+Last updated: 2026-11-03 (session 2, release 0.2.0).
 
 ---
 
@@ -213,6 +213,62 @@ Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel;
 - [!] Not executed, by policy. No push, no deploy, no package publication, no credentials exercised.
       `AGENTS.md` requires explicit human approval per artifact; `scripts/verify_release.py` exists to
       gate that step when it is approved.
+
+---
+
+## Session 2 — 0.2.0: audit, fix the drift, publish
+
+The milestone contract is `docs/ROADMAP-0.2.0.md`. This section records what actually happened.
+
+### Why the session existed
+
+An audit of the tree against current upstream documentation found two drifts that each invalidated a
+headline claim. Neither was a bug in the sense of "wrong output"; both were the software quietly
+disagreeing with what we said about it.
+
+| Drift | What the docs claimed | What the code did |
+|---|---|---|
+| MCP | 2026-07-28 revision (AGENTS.md §4.3) | `mcp>=1.2,<2` + `from mcp.server.fastmcp import FastMCP` → SDK v1 maintenance line |
+| Browser | WebGPU execution provider | bare `onnxruntime-web` import → the JSEP backend, deprecated in ORT 1.29.0 |
+
+### Closed
+
+- [x] MCP migrated to SDK v2 (`mcp>=2.3,<3`, `MCPServer`). Verified end-to-end over stdio with the v2
+      `Client` against a real subprocess: 20 tools, 3 resources, 3 prompts, read tool works, gated tool
+      refuses without approval.
+- [x] Found and fixed a second MCP defect: `hcs-foundry mcp` accepted no `--approve` and no `serve`
+      positional, so the documented approval path was env-only. Now repeatable and forwarded.
+- [x] Browser moved to the native WebGPU EP (`onnxruntime-web/webgpu`). Proven by the build output:
+      `ort-wasm-simd-threaded.jsep-*.wasm` → `ort-wasm-simd-threaded.asyncify-*.wasm` +
+      `ort.webgpu.bundle.min-*.js`, bundle size essentially unchanged.
+- [x] Found and fixed a fake control: the Dashboard hard-coded `"auto"`, so the Settings provider
+      choice did nothing. Now honoured, and the session is rebuilt when the preference changes.
+- [x] Found and fixed an unbounded hang: switching WASM → WebGPU in one page never settled. Every
+      provider attempt is now bounded at 20 s and a timeout is reported as a fallback reason.
+- [x] Found and fixed console noise: ORT logged 2 node-assignment advisories per session at error
+      level. Now `logSeverityLevel: 3`; measured 0 console errors.
+- [x] Re-measured the browser and **changed the conclusion**: for the 250k demo, WASM warm (2.7 ms
+      median) is ~6× faster than WebGPU warm (~16.8 ms), and WebGPU pays a 0.25–0.4 s cold start. The
+      retired "18.2 ms on WebGPU" figure was JSEP.
+- [x] Release gate hardened: `scripts/release.ps1` (fail-fast, all gates) and a rewritten
+      `scripts/verify_release.py --strict` (version consistency across four files, changelog entry,
+      brand credit, acceptance-matrix integrity, secrets, U+FFFD scan, demo-manifest hash, MCP pin
+      agreement, built-site externals). The gate proved itself by catching two real problems during
+      this session and by failing on a deliberately broken version string.
+- [x] 121 Python tests, 48 web tests, ruff clean, TypeScript strict clean.
+- [ ] Publishing: repository, tag, Vercel deployment — see the release section below.
+
+### Numbers
+
+| Deliverable | Session 1 | Session 2 |
+|---|---|---|
+| Python tests | 118 | **121** |
+| Web tests | 40 | **48** |
+| MCP SDK | v1 (`<2`) | **v2 (2.3.0)** |
+| MCP protocol revision | 2025-era | **2026-07-28** |
+| Browser WebGPU backend | JSEP (deprecated) | **native EP** |
+| Console errors on Dashboard | 4 | **0** |
+| Release gates | ad hoc | **one command, strict** |
 
 ---
 
