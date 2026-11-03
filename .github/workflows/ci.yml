@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: python (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv venv .venv --python 3.12
+      - name: Install (Linux)
+        if: runner.os == 'Linux'
+        run: uv pip install --python .venv/bin/python -e ".[torch,export,mcp,dev]" --extra-index-url https://download.pytorch.org/whl/cpu
+      - name: Install (Windows)
+        if: runner.os == 'Windows'
+        run: uv pip install --python .venv\Scripts\python.exe -e ".[torch,export,mcp,dev]"
+      - name: Lint
+        if: runner.os == 'Linux'
+        run: .venv/bin/python -m ruff check python
+      - name: Lint (Windows)
+        if: runner.os == 'Windows'
+        run: .venv\Scripts\python.exe -m ruff check python
+      - name: Tests (Linux)
+        if: runner.os == 'Linux'
+        run: .venv/bin/python -m pytest python/tests -q --junitxml=report.xml
+      - name: Tests (Windows)
+        if: runner.os == 'Windows'
+        run: .venv\Scripts\python.exe -m pytest python/tests -q --junitxml=report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-${{ matrix.os }}
+          path: report.xml
+
+  wheel:
+    name: wheel + clean install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build --wheel
+      - run: uv venv clean --python 3.12
+      - run: uv pip install --python clean/bin/python dist/*.whl
+      - name: CLI smoke (no torch installed)
+        run: |
+          clean/bin/hcs-foundry --no-probe doctor --json | head -c 400
+          clean/bin/hcs-foundry preset list --json
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+  security:
+    name: repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No secrets in tracked files
+        run: |
+          if git grep -nE '(api[_-]?key|secret|token)\s*[:=]\s*["'"'"'][A-Za-z0-9_\-]{16,}' -- ':!*.md' ':!package-lock.json'; then
+            echo "Potential secret committed"; exit 1
+          fi
+      - name: No pickle or eval in runtime modules
+        run: |
+          if grep -rnE '(^|[^A-Za-z_.])(eval|exec)\(|pickle\.load' python/hcs_foundry; then
+            echo "Forbidden primitive in runtime module"; exit 1
+          fi
+      - name: Docs present
+        run: |
+          for f in docs/RESEARCH.md docs/ARCHITECTURE.md docs/TESTING.md docs/SECURITY.md docs/STATUS.md docs/PERFORMANCE.md docs/acceptance.json; do
+            test -s "$f" || { echo "missing $f"; exit 1; }
+          done
+          test "$(ls docs/tutorials/*.md | wc -l)" -ge 20

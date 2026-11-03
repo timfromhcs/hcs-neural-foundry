@@ -1,0 +1,144 @@
+- generic [ref=f1e3]:
+  - link "Zum Hauptinhalt springen" [ref=f1e4] [cursor=pointer]:
+    - /url: "#main"
+  - complementary "HCS Neural Foundry" [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - generic [aria-hidden] [ref=f1e7]: HF
+      - generic [ref=f1e8]:
+        - generic [ref=f1e9]: HCS Neural Foundry
+        - generic [ref=f1e10]: Lokal-first Werkbank für neuronale Netze · Alpha
+    - navigation "HCS Neural Foundry" [ref=f1e11]:
+      - generic [ref=f1e12]:
+        - generic [ref=f1e13]: Arbeit
+        - generic [ref=f1e14]:
+          - link "Übersicht" [ref=f1e15] [cursor=pointer]:
+            - /url: "#/dashboard"
+            - generic [aria-hidden] [ref=f1e16]: ◎
+            - text: Übersicht
+          - link "Modell-Studio" [ref=f1e17] [cursor=pointer]:
+            - /url: "#/model-studio"
+            - generic [aria-hidden] [ref=f1e18]: ◈
+            - text: Modell-Studio
+          - link "Gewichts-Studio" [ref=f1e19] [cursor=pointer]:
+            - /url: "#/weight-studio"
+            - generic [aria-hidden] [ref=f1e20]: ▦
+            - text: Gewichts-Studio
+          - link "Trainings-Labor" [ref=f1e21] [cursor=pointer]:
+            - /url: "#/training-lab"
+            - generic [aria-hidden] [ref=f1e22]: ▷
+            - text: Trainings-Labor
+          - link "Evaluierungs-Labor" [ref=f1e23] [cursor=pointer]:
+            - /url: "#/evaluation-lab"
+            - generic [aria-hidden] [ref=f1e24]: ⚖
+            - text: Evaluierungs-Labor
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]: Forschung
+        - generic [ref=f1e27]:
+          - link "Generator-Labor" [ref=f1e28] [cursor=pointer]:
+            - /url: "#/generator-lab"
+            - generic [aria-hidden] [ref=f1e29]: ∿
+            - text: Generator-Labor
+          - link "Agenten-Labor" [ref=f1e30] [cursor=pointer]:
+            - /url: "#/agent-lab"
+            - generic [aria-hidden] [ref=f1e31]: ⬡
+            - text: Agenten-Labor
+          - link "Modellbibliothek" [ref=f1e32] [cursor=pointer]:
+            - /url: "#/model-library"
+            - generic [aria-hidden] [ref=f1e33]: ▤
+            - text: Modellbibliothek
+      - generic [ref=f1e34]:
+        - generic [ref=f1e35]: System
+        - generic [ref=f1e36]:
+          - link "Verlauf" [ref=f1e37] [cursor=pointer]:
+            - /url: "#/history"
+            - generic [aria-hidden] [ref=f1e38]: ↻
+            - text: Verlauf
+          - link "API / MCP" [ref=f1e39] [cursor=pointer]:
+            - /url: "#/api-mcp"
+            - generic [aria-hidden] [ref=f1e40]: ⇄
+            - text: API / MCP
+          - link "Tutorials & Doku" [ref=f1e41] [cursor=pointer]:
+            - /url: "#/docs"
+            - generic [aria-hidden] [ref=f1e42]: ❑
+            - text: Tutorials & Doku
+          - link "Einstellungen" [ref=f1e43] [cursor=pointer]:
+            - /url: "#/settings"
+            - generic [aria-hidden] [ref=f1e44]: ⚙
+            - text: Einstellungen
+    - generic [ref=f1e46]:
+      - combobox [ref=f1e47]:
+        - option "English"
+        - option "Deutsch" [selected]
+        - option "Français"
+      - generic [ref=f1e48]: Alle Daten bleiben auf diesem Gerät
+  - main [ref=f1e49]:
+    - generic [ref=f1e161]:
+      - heading "Trainings-Labor" [level=1] [ref=f1e162]
+      - paragraph [ref=f1e163]: Ein echter Optimierer auf einem kleinen Modell. Die Browser-Demo trainiert in einem Web Worker, die Desktop-Engine mit PyTorch.
+    - generic [ref=f1e164]:
+      - region [ref=f1e165]:
+        - heading "Trainings-Labor" [level=3] [ref=f1e168]
+        - generic [ref=f1e169]:
+          - generic [ref=f1e170]:
+            - generic [ref=f1e171]: Verdeckte Breite
+            - spinbutton "Verdeckte Breite" [ref=f1e172]: "24"
+          - generic [ref=f1e173]:
+            - generic [ref=f1e174]: Schritte
+            - spinbutton "Schritte" [ref=f1e175]: "200"
+          - generic [ref=f1e176]:
+            - generic [ref=f1e177]: Batch-Größe
+            - spinbutton "Batch-Größe" [ref=f1e178]: "16"
+          - generic [ref=f1e179]:
+            - generic [ref=f1e180]: Lernrate
+            - spinbutton "Lernrate" [ref=f1e181]: "0.05"
+          - generic [ref=f1e182]:
+            - generic [ref=f1e183]: Seed
+            - spinbutton "Seed" [ref=f1e184]: "7"
+          - generic [ref=f1e185]:
+            - generic [ref=f1e186]: Status
+            - generic [ref=f1e187]: Bereit
+        - generic [ref=f1e189]:
+          - button "Training starten" [ref=f1e190] [cursor=pointer]
+          - button "Stoppen" [disabled] [ref=f1e191]
+        - note [ref=f1e193]:
+          - generic [aria-hidden] [ref=f1e194]: "!"
+          - generic [ref=f1e195]:
+            - strong [ref=f1e196]: Browser-Demo (eingeschränkt)
+            - generic [ref=f1e197]: Browser-Training ist auf ein kleines MLP mit synthetischer Aufgabe begrenzt. Es ersetzt die Desktop-Engine nicht.
+      - region [ref=f1e198]:
+        - heading "Ergebnisse" [level=3] [ref=f1e201]
+        - generic [ref=f1e202]:
+          - generic [ref=f1e203]:
+            - generic [ref=f1e204]: Loss
+            - generic [ref=f1e205]: —
+            - generic [ref=f1e206]: gemessen
+          - generic [ref=f1e207]:
+            - generic [ref=f1e208]: Validierungs-Loss
+            - generic [ref=f1e209]: —
+            - generic [ref=f1e210]: gemessen
+          - generic [ref=f1e211]:
+            - generic [ref=f1e212]: Genauigkeit
+            - generic [ref=f1e213]: —
+            - generic [ref=f1e214]: Referenzwert 25%
+          - generic [ref=f1e215]:
+            - generic [ref=f1e216]: Schritt
+            - generic [ref=f1e217]: "0"
+        - generic [ref=f1e218]: —
+    - region [ref=f1e221]:
+      - generic [ref=f1e223]:
+        - heading "Desktop-Engine (vollständig)" [level=3] [ref=f1e224]
+        - text: Dieser Lauf wird mit Seed, Datensatz und Konfiguration gespeichert.
+      - generic [ref=f1e225]: hcs-foundry model create --name "My LM" --params 250k hcs-foundry train --model my-lm --steps 400 --batch-size 16 --block-size 32 hcs-foundry eval --model my-lm --suite text-smoke hcs-foundry export --model my-lm --format onnx
+      - note [ref=f1e227]:
+        - generic [aria-hidden] [ref=f1e228]: i
+        - generic [ref=f1e229]: "Ein abweichendes Label ist kein Fehler, sondern der ehrliche Stand dieses Builds. im Browser nicht verfügbar: PyTorch training, LoRA, evolution and ONNX export only exist in the desktop engine."
+    - generic [ref=f1e119]:
+      - generic [ref=f1e120]: Mit ❤️ von hcsmedia und timfromhcs
+      - generic [aria-hidden] [ref=f1e121]: ·
+      - generic [ref=f1e122]: Version 0.1.0
+      - generic [aria-hidden] [ref=f1e123]: ·
+      - link "Dokumentation" [ref=f1e124] [cursor=pointer]:
+        - /url: "#/docs"
+      - generic [aria-hidden] [ref=f1e125]: ·
+      - link "Fähigkeitsstatus" [ref=f1e126] [cursor=pointer]:
+        - /url: "#/settings"

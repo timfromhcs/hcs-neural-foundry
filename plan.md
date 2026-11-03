@@ -1,8 +1,11 @@
 # Implementation plan — HCS Neural Foundry
 
-This file is the live status board. `AGENTS.md` is the contract; this file records what is real.
+Live status board. `AGENTS.md` is the contract; this file records what is real, what is narrow, and
+what was deliberately not attempted. Anything marked `[!]` is not a TODO backlog item that was
+forgotten — it is a decision, with the reason written next to it.
 
-Legend: `[ ]` not started · `[~]` in progress · `[x]` done and verified · `[!]` blocked/unsupported with reason
+Legend: `[x]` done and verified · `[~]` done but narrow (declared experimental) · `[!]` not implemented,
+declared unsupported · `[ ]` open backlog.
 
 Last updated: 2026-11-03 (session 1).
 
@@ -10,158 +13,225 @@ Last updated: 2026-11-03 (session 1).
 
 ## Phase 0 — Reconnaissance and research validation
 
-- [x] Repository inventory: `E:\neuralfond` contained only `AGENTS.md`, no git repo, no prior work at risk.
-- [x] Environment inventory: Python 3.14 system (torch unsupported range used instead → Python 3.12 venv), Node 22.23, `uv` 0.13.5, git 2.54, cargo 1.96.
-- [x] Dependency reality check against the registry before choosing the engine (`torch 2.15.0`, `numpy 2.5.4`, `pydantic 2.14.2`, `fastapi 0.162.0`, `safetensors 0.8.0` resolve on cp312).
-- [x] `DECISIONS.md` with ADR-001…ADR-016.
+- [x] Repository inventory: `E:\neuralfond` contained only `AGENTS.md`; no git repo; no prior work at risk.
+- [x] Environment inventory: system Python 3.14.6 (no torch wheels in range) → Python 3.12.13 venv;
+      Node 22.23.1; uv 0.13.5; git 2.54.0; cargo 1.96.0.
+- [x] Dependency reality check against the registry *before* choosing the engine:
+      `torch 2.15.0+cpu`, `numpy 2.5.4`, `pydantic 2.14.2`, `fastapi 0.162.0`, `safetensors 0.8.0`,
+      `onnx 1.23.2`, `onnxruntime 1.31.1`, `mcp 1.30.0`, `onnxruntime-web 1.31.1`, `vite 8.3.5`.
+- [x] 16 ADRs in `DECISIONS.md`.
 - [x] `docs/RESEARCH.md` evidence map + "claims we must not make".
-- [x] Risk register (see end of this file).
-- [x] License inventory: code MIT; no third-party weights or datasets bundled.
+- [x] Risk register (end of this file).
+- [x] Licence inventory: code MIT; no third-party weights or datasets bundled; the only shipped model
+      was trained in-repo.
 
 Gate: no undocumented assumptions, nothing overwritten. **PASSED.**
 
 ## Phase 1 — Foundation, shell, localization
 
-- [x] Monorepo skeleton (`python/`, `apps/web/`, `mcp/`, `docs/`, `scripts/`).
-- [x] Typed Python package `hcs_foundry` with strict schemas (pydantic v2).
-- [x] SQLite metadata store with forward-only migrations + migration test.
-- [x] Artifact store: temp-write → hash → atomic promote.
-- [x] Web app shell: 12 routes, dark-first design tokens, responsive, keyboard accessible.
-- [x] Locales `en`, `de`, `fr` with a parity test that fails on missing/extra keys.
-- [x] Footer credit "Made with ❤️ by hcsmedia and timfromhcs".
+- [x] Monorepo layout: `python/`, `apps/web/`, `docs/`, `scripts/`, `examples/`, `mcp/`.
+- [x] Strict pydantic schemas for every public payload; closed enums for operations and states.
+- [x] SQLite store, forward-only migrations to schema version 5, idempotency test, head pointer.
+- [x] Artifact store with temp-write → hash → atomic rename.
+- [x] Web shell: 12 routes, design tokens, dark-first + light theme, 5 accent colours, high contrast,
+      reduced motion, skip link, keyboard navigation.
+- [x] `en` / `de` / `fr` (260 keys) with a parity test that fails on drift.
+- [x] Footer credit "Made with ❤️ by hcsmedia and timfromhcs" in the app, README and release docs.
 
-Gate: clean install/build/test, no dead menu entries. **PASSED** (verified by `scripts/verify.ps1`).
+Gate: `scripts/verify.ps1` green, no dead menu entries. **PASSED.**
 
 ## Phase 2 — Hardware detection and resource estimation
 
-- [x] CPU / RAM / disk / OS / Python detection.
-- [x] Accelerator probe: torch device list, ROCm flag, DirectML presence via `torch_directml` absence check, Vulkan via WMI/driver query — recorded as *claims*, then validated by a micro-benchmark before being marked usable.
-- [x] Capability registry with `usable` vs `declared` separation and an honest fallback reason.
-- [x] Resource estimator (params, grads, optimizer state, activations, KV cache, export buffers).
-- [x] Profiles `safe` / `balanced` / `performance` / `custom` with hard caps.
-- [x] `hcs-foundry doctor` + `doctor --json`.
+- [x] CPU / RAM / disk / OS / Python detection (no psutil dependency; physical cores explicitly
+      labelled an estimate).
+- [x] Accelerator probing: CUDA/ROCm via torch, MPS, DirectML via import check.
+- [x] `declared` vs `usable` separation; a backend is `usable` only after a real matmul ran on it.
+- [x] Honest fallback reason recorded per backend and surfaced by CLI/API/UI.
+- [x] Resource estimator with explicit assumptions, KV-cache term and a 25% headroom rule.
+- [~] Profiles `safe/balanced/performance/custom`: implemented as explicit caps in the estimator and
+      trainer config; no separate GUI profile switcher. Declared in `docs/STATUS.md`.
+- [~] Fixtures simulate CPU-only and validate the invariant "usable ⇒ benchmarked". No CUDA/ROCm
+      hardware exists here, so those paths are unit-tested only as declared/fallback.
 
-Gate: fixtures simulate CPU-only, CUDA, ROCm, browser WASM/WebGPU; unsupported backends degrade with a message. **PASSED.**
+Gate: unsupported acceleration degrades with a message and never crashes. **PASSED (CPU-only).**
 
 ## Phase 3 — Model factory and exact parameter budgets
 
-- [x] Registry with `ModelFamilyAdapter` protocol.
-- [x] `mlp` family (in/out/hidden layers/activation).
-- [x] `transformer-lm` family (RoPE, GQA, SwiGLU, RMSNorm, tied embeddings optional).
-- [x] Exact `numel` accounting including tied/aliased tensors (counted once).
-- [x] Budget solver with `exact|closest|closest_under|at_least`, constraint validation, ranked candidates, infeasibility explanation.
-- [x] Deterministic build under seed; architecture hash reproducible across processes.
-- [x] Smoke test: finite forward pass, shape assertions.
+- [x] `ModelFamilyAdapter` protocol, registry, family maturity.
+- [x] MLP family (arbitrary hidden widths, bias toggle, 3 activations).
+- [x] `transformer-lm` family (RoPE, GQA, SwiGLU, RMSNorm, tied embeddings, dropout).
+- [x] Exact `numel` enumeration with tied-tensor de-duplication (`shared_tensors`, `tied_to`).
+- [x] Formula `predict_parameters` used for pruning only; equality with enumeration asserted in tests
+      for 6 configurations including both tie modes.
+- [x] Budget solver: 4 policies, constraint validation, distinct-count ranking, infeasibility text,
+      verification by instantiation of the top candidates.
+- [x] Deterministic build by seed; stable architecture hash across processes.
 
-Gate: displayed count == `sum(p.numel())` for every family, rebuilt config hashes identically. **PASSED.**
+Gate: displayed count == `sum(numel)` for every family; rebuilt config hashes identically. **PASSED.**
 
 ## Phase 4 — Weight Studio
 
-- [x] Tensor metadata (shape, dtype, min/max/mean/std/norm, %zeros, finiteness).
-- [x] Bounded slice reader + histogram (never loads a whole checkpoint into the UI).
-- [x] Patch ops: `set_scalar`, `set_slice`, `init_seeded`, `add_scaled_delta`, `low_rank_delta`, `normalize`, `clamp`, `scale`, `sparsity_mask`, `interpolate`, `copy_from`.
-- [x] Precondition validation (shape, dtype, base hash, parameter caps), finite-value guard, immutable patch records, rollback.
-- [x] Provenance: patch id, author (`user`/`agent:<id>`), timestamps, before/after hashes.
+- [x] Tensor metadata: shape, dtype, min/max/mean/std/norm, zero fraction, finiteness, tie target.
+- [x] Bounded slice reader (≤4096 numbers) and histogram.
+- [x] 12 closed operations: `set_scalar`, `set_block`, `init_seeded`, `add_scaled_delta`,
+      `low_rank_delta`, `normalize`, `clamp`, `scale`, `sparsity_mask`, `interpolate`, `copy_from`,
+      `set_trainable`.
+- [x] Precondition validation (shape, dtype, base hash), parameter caps, non-finite rejection.
+- [x] Immutable patch records with author, timestamps, before/after norms, changed element count.
+- [x] Content-addressed checkpoints, alias-aware patching (`lm_head.weight` → `tok_emb.weight`),
+      head pointer and pointer-based rollback.
+- [x] Browser equivalent for MLP weights: 5 operations, effect measurement, checkpoint + rollback.
 
 Gate: apply → diff → evaluate → restart → rollback with provenance. **PASSED.**
 
 ## Phase 5 — Baseline training and evaluation
 
-- [x] Unified trainer lifecycle `validate → estimate → prepare → dry_run → train → validate → checkpoint → evaluate`.
-- [x] AdamW baseline, gradient clipping, deterministic seeding, checkpoint/resume, pause/cancel, terminal states.
-- [x] Bundled synthetic datasets (no license friction): `tiny-shapes` (vision-ish MLP), `tiny-text` (char transformer).
-- [x] Benchmark registry with protocol files, dataset hash, evaluator version, seed, hardware, timing.
-- [x] Invalid-run handling: an evaluator error makes a run `invalid`, not a zero.
+- [x] Lifecycle `validate → estimate → dry_run → train → validate → checkpoint → summarize`.
+- [x] AdamW and SGD, warmup + cosine decay, gradient clipping, parameter-group decay policy.
+- [x] Deterministic batching, checkpoint cadence, resume from head, pause/resume/cancel,
+      `max_seconds` guard, explicit terminal states (`invalid` reserved for evaluator failure).
+- [x] Telemetry: loss, val loss, lr, grad norm, tokens, elapsed, peak Python heap.
+- [x] Bundled synthetic datasets with hashes and licences, plus a model-adapted MLP task.
+- [x] Three evaluation suites with metric definitions, direction, baseline and provenance.
+- [x] Evaluation records a run, an evaluation report and an event.
 
-Gate: reproducible run, reload reproduces inference within tolerance. **PASSED.**
+Gate: reproducible run; reload reproduces inference; invalid runs are not zeros. **PASSED.**
 
 ## Phase 6 — Weight generation research lab
 
-- [x] Checkpoint corpus manifest with license + hash fields.
-- [x] Deterministic tensor encoding (per-tensor z-score, shape-preserving).
-- [x] Hypernetwork generator for a fixed tiny MLP (`hcs-foundry generate`).
-- [!] D2NWG-style diffusion and DeepWeightFlow-style flow matching: **interface only** (declared `unsupported`), because reproducing them credibly needs a real checkpoint corpus and a study that this repo cannot complete honestly in one session.
-- [x] Leakage guard: train/test split by checkpoint family, asserted in tests.
-- [x] Independent evaluation of generated candidates.
+- [x] Task-descriptor encoder (deterministic random projection), target-checkpoint collection from
+      gradient training.
+- [x] Conditional hypernetwork (numpy, Adam) for a fixed tiny MLP, with a loss curve.
+- [x] Leakage guard: positional split by task seed, overlap raises.
+- [x] Out-of-sample evaluation against random init and a gradient-trained baseline, plus a stored
+      claim boundary.
+- [~] Checkpoint corpus manifest: implemented as the generator report (`corpus` entries with split,
+      steps, param norm) rather than a standalone licensed corpus file, because no external corpus is
+      used.
+- [!] D2NWG-style diffusion and DeepWeightFlow-style flow matching: not implemented. Reason: they need
+      a real checkpoint corpus, permutation canonicalisation and OOD evaluation; a 40-line mock with the
+      papers' names on it would be a false capability claim.
+- [x] Git Re-Basin alignment: **not implemented**; documented as a prerequisite in `docs/RESEARCH.md`.
 
-Gate: generated candidate evaluated out-of-sample; docs avoid SOTA claims. **PASSED (narrow scope).**
+Gate: generated candidate evaluated out-of-sample, no SOTA language. **PASSED (narrow scope).**
 
 ## Phase 7 — Evolution and quality-diversity
 
-- [x] Antithetic Evolution Strategies baseline with reward normalization.
-- [x] MAP-Elites archive with explicit behaviour descriptors (score, latency, size).
-- [x] Deterministic toy environment; comparison against gradient baseline at equal evaluation budget.
-- [x] Population/Pareto export as JSON for the UI.
+- [x] Antithetic ES, rank-normalised updates, deterministic replay (identical scores and
+      best-parameter hash for the same seed).
+- [x] MAP-Elites archive with score/latency/size descriptors and coverage reporting.
+- [x] Example-matched gradient baseline in an isolated scratch workspace.
+- [x] Published result: gradient training wins at equal example budget (0.72 vs 0.39 on the demo task) —
+      recorded in `docs/PERFORMANCE.md` instead of being hidden.
+- [~] CMA-ES adapter: not implemented, documented as optional.
 
-Gate: reproducible improvement and diversity; fair-budget comparison documented. **PASSED.**
+Gate: reproducible improvement and diversity with a disclosed comparison. **PASSED.**
 
-## Phase 8 — LLM / text diffusion / image diffusion pipelines
+## Phase 8 — LLM / text diffusion / image diffusion
 
-- [~] Autoregressive transformer: implemented end-to-end at educational scale (char-level, <1M params).
-- [!] Masked diffusion LM: declared `unsupported` (trainer/sampler not implemented; adapter slot exists).
-- [!] Latent image diffusion / DiT: declared `unsupported`. No toy-quality claim is made.
-- [x] Model→ONNX export with numeric parity check against the native run.
+- [x] Autoregressive character transformer: training, sampling-free evaluation, ONNX export.
+- [!] Masked diffusion LM: unsupported (no trainer/sampler).
+- [!] Latent image diffusion / DiT: unsupported.
+- [x] ONNX export with a numerical parity gate (relative error ≤ 1e-4; measured 7.15e-07).
 
-Gate partly met; unsupported items are labelled in `docs/STATUS.md` and in the UI. **PASSED WITH DECLARED GAPS.**
+Gate partly met; every unsupported item is labelled in `docs/STATUS.md` **and** in the UI. **PASSED
+WITH DECLARED GAPS.**
 
 ## Phase 9 — Reward / RL trainers
 
-- [!] DPO/PPO/GRPO: declared `unsupported`. A reward interface + deterministic reward fixtures exist and are tested, so the slot is honest, but no RL trainer is claimed.
+- [!] DPO / PPO / GRPO: unsupported. Reward *fixtures* and the isolation structure exist and are
+      tested; no RL trainer is claimed. Documented in `docs/RESEARCH.md` §3.4.
 
 ## Phase 10 — Agent Lab and MCP
 
-- [x] Planner / proposer / verifier separation: agent proposals are immutable manifests validated by the execution service; the evaluator never runs in the proposer process.
-- [x] MCP server over stdio with read-only tools and approval-gated mutating tools.
-- [x] Resource caps, workspace root allowlist, no shell bridge, no arbitrary Python.
-- [x] Tool-invocation log persisted to SQLite and exposed read-only.
+- [x] Proposal schema, policy (allowlist, forbidden ops, size caps), approval requirement.
+- [x] Isolated verifier: separate process, JSON argv, minimal environment, no DB access.
+- [x] MCP server: 12 read-only tools, 7 approval-gated tools, resources, prompts, audit log.
+- [x] Browser mirror of the contract (drafting level only), clearly labelled as such.
+- [~] Verified through the SDK's in-process client rather than an external host application.
 
-Gate: read-only tool works with a conforming client; mutating tool refuses without approval. **PASSED.**
+Gate: read-only tool works; gated tool refuses without approval; calls are audited. **PASSED.**
 
 ## Phase 11 — Browser / Vercel
 
-- [x] Static Vite build, zero server functions, no remote inference.
-- [x] ONNX Runtime Web with `webgpu` → `wasm` fallback, provider validated by a real smoke inference before use.
-- [x] IndexedDB run history + export/import bundle + delete-all.
-- [x] `navigator.storage.estimate()` / `persist()` surfaced in Settings.
-- [x] Browser-local demo trainer (tiny MLP, Web Worker) — labelled `Limited`.
-- [x] Capability parity matrix in-app.
+- [x] Static Vite build; no server functions, no proxy, no remote inference.
+- [x] ONNX Runtime Web: WebGPU attempted, WASM fallback, provider reported only after real inference.
+- [x] Shipped demo model (250,432 parameters) exported with parity and a manifest recording how the
+      numbers were produced.
+- [x] Browser MLP trainer in a Web Worker with stop-between-steps.
+- [x] Browser weight studio, weight-space interpolation, evaluation.
+- [x] IndexedDB history, JSON bundle export/import, storage estimate, persistence request, delete-all.
+- [x] Capability parity matrix in-app and in `docs/STATUS.md`.
+- [x] `vercel.json` for a static deploy (not deployed — see Phase 14).
 
-Gate: no hidden backend calls; WASM path works; WebGPU labelled experimental. **PASSED.**
+Gate: no hidden backend calls; WASM path verified; WebGPU labelled experimental. **PASSED.**
 
 ## Phase 12 — API, CLI, packaging, desktop
 
-- [x] Versioned REST API + OpenAPI at `/api/v1/openapi.json`, bearer token for mutations, strict CORS, rate limits.
-- [x] CLI covering doctor/model/weights/train/eval/evolve/generate/export/history/api/mcp.
-- [x] Wheel build + clean-venv install smoke test.
-- [!] npm package publish, PyPI publish, Tauri desktop, self-extracting launcher: **not published** — no credentials exercised, no signed artifacts produced. Declared.
-- [x] SBOM-ish dependency inventory script + `verify-release` script.
+- [x] Versioned REST API, OpenAPI, bearer auth, CORS allowlist, rate limits, SSE, typed errors.
+- [x] CLI covering doctor/model/solve/preset/weights/train/eval/evolve/generate/export/history/
+      proposal/api/mcp, with `--json`, position-independent global flags and stable exit codes.
+- [x] Wheel builds; installed into a clean venv **without torch** and `doctor` works.
+- [x] Dependency inventory script (`scripts/dependency_inventory.py`) and release verifier.
+- [!] npm/PyPI publication: not executed (ADR-016).
+- [!] Tauri desktop shell and portable launcher: not built.
+
+Gate: clean-venv install and CLI start verified locally. **PASSED for the wheel; publication open.**
 
 ## Phase 13 — QA gates
 
-- [x] pytest suite (unit + integration + API security + numerical gradient checks).
-- [x] vitest suite for the web app (i18n parity, storage, reducer logic).
-- [x] ruff lint clean; TypeScript strict typecheck clean.
-- [x] Accessibility: keyboard flow, focus visibility, labels, `prefers-reduced-motion`, no color-only status.
-- [x] Locale parity test (en/de/fr) in CI script.
-- [x] Performance smoke: cold start, model build, step time, export time recorded in `docs/PERFORMANCE.md`.
+- [x] 85 pytest tests, 34 vitest tests, ruff clean, TypeScript strict clean.
+- [x] Numerical checks: gradient reachability, parameter-count equality, ONNX parity, patch finiteness.
+- [x] Security tests: auth, CORS, rate limit, approval gate, dangerous-primitive scan.
+- [x] i18n parity test.
+- [x] Manual keyboard + responsive checks (390 px and desktop) via a real browser; no horizontal
+      overflow measured.
+- [~] Automated accessibility audit (axe) not run; manual checks documented in `docs/PERFORMANCE.md`.
+- [x] End-to-end smoke workflow in `scripts/verify.ps1`.
 
 ## Phase 14 — Publish
 
-- [!] Not executed by design. No push, no deploy, no package publication happened in this session.
-  Reasons: `AGENTS.md` requires explicit human approval for external publication, and I will not
-  exercise credentials on the user's behalf.
+- [!] Not executed, by policy. No push, no deploy, no package publication, no credentials exercised.
+      `AGENTS.md` requires explicit human approval per artifact; `scripts/verify_release.py` exists to
+      gate that step when it is approved.
 
 ---
+
+## Delivered in session 1
+
+| Deliverable | Count / result |
+|---|---|
+| Python modules | 30 files (engine, storage, interfaces, verifier) |
+| Python tests | 85 passed |
+| Web tests | 34 passed |
+| CLI leaf commands | 26 |
+| MCP tools | 20 (13 read-only, 7 gated) |
+| API endpoints | 33 |
+| Weight operations | 12 (engine) + 5 (browser) |
+| Lessons | 20 |
+| ADRs | 16 |
+| Bundle (gzip) | ~109 kB JS + 3.5 kB CSS + 29.5 MB ONNX runtime WASM |
+
+## Backlog (explicitly open, not forgotten)
+
+1. Diffusion / flow-matching weight generators with real corpus + Git Re-Basin alignment.
+2. DPO/GRPO trainer and a verifiable-reward environment.
+3. Masked diffusion language model trainer/sampler.
+4. Tauri desktop shell + single-file launcher; npm/PyPI publication with provenance.
+5. Automated axe accessibility audit and visual regression snapshots.
+6. WebGPU operator coverage matrix per model family.
+7. External benchmark adapters (LiveBench, BFCL) with protocol files.
 
 ## Risk register
 
 | # | Risk | Mitigation | State |
 |---|---|---|---|
-| R1 | Overclaiming weight generation | maturity labels + no-SOTA rule + independent evaluator | active |
-| R2 | Parameter-count drift between UI and engine | single source of truth: `count_parameters` enumerated from the live module | active |
-| R3 | Unsafe checkpoint import | safetensors only, size/shape caps, no pickle path | active |
-| R4 | Local API exposed beyond loopback | bind 127.0.0.1, token required, CORS allowlist, warning in Settings | active |
-| R5 | Benchmark tampering by the agent | evaluator in separate process, fixtures read-only, hash recorded | active |
-| R6 | torch absence on a user machine | core inspection/model/CLI paths degrade; torch-dependent commands fail with an actionable message | active |
-| R7 | Determinism drift across platforms | seeds recorded, cross-platform equality documented as best-effort | active |
-| R8 | Scope inflation (many half-built features) | every feature is either implemented+tested or explicitly `unsupported` in `docs/STATUS.md` | active |
+| R1 | Overclaiming weight generation | maturity labels, claim boundaries in payloads, no-SOTA rule | active |
+| R2 | Parameter-count drift between UI and engine | single source of truth: enumeration, tested against the formula | active |
+| R3 | Unsafe checkpoint import | safetensors only, tensor-set validation, size caps | active |
+| R4 | Local API exposed beyond loopback | loopback default, token required, CORS allowlist, warning | active |
+| R5 | Benchmark tampering by an agent | evaluator in a separate process, read-only fixtures, hash recorded | active |
+| R6 | torch missing on a user machine | lazy imports, actionable `missing_dependency`, clean-venv test | active |
+| R7 | Determinism drift across platforms | seeds/versions recorded; same-stack equality tested, cross-machine not claimed | active |
+| R8 | Scope inflation | every feature is implemented+tested or declared `[!]` | active |
+| R9 | Browser storage eviction | estimate + persist request + export bundle + warnings | active |

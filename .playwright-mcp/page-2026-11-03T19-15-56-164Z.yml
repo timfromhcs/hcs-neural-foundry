@@ -1,0 +1,243 @@
+- generic [ref=f1e3]:
+  - link "Zum Hauptinhalt springen" [ref=f1e4] [cursor=pointer]:
+    - /url: "#main"
+  - complementary "HCS Neural Foundry" [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - generic [aria-hidden] [ref=f1e7]: HF
+      - generic [ref=f1e8]:
+        - generic [ref=f1e9]: HCS Neural Foundry
+        - generic [ref=f1e10]: Lokal-first Werkbank für neuronale Netze · Alpha
+    - navigation "HCS Neural Foundry" [ref=f1e11]:
+      - generic [ref=f1e12]:
+        - generic [ref=f1e13]: Arbeit
+        - generic [ref=f1e14]:
+          - link "Übersicht" [ref=f1e15] [cursor=pointer]:
+            - /url: "#/dashboard"
+            - generic [aria-hidden] [ref=f1e16]: ◎
+            - text: Übersicht
+          - link "Modell-Studio" [ref=f1e17] [cursor=pointer]:
+            - /url: "#/model-studio"
+            - generic [aria-hidden] [ref=f1e18]: ◈
+            - text: Modell-Studio
+          - link "Gewichts-Studio" [ref=f1e19] [cursor=pointer]:
+            - /url: "#/weight-studio"
+            - generic [aria-hidden] [ref=f1e20]: ▦
+            - text: Gewichts-Studio
+          - link "Trainings-Labor" [ref=f1e21] [cursor=pointer]:
+            - /url: "#/training-lab"
+            - generic [aria-hidden] [ref=f1e22]: ▷
+            - text: Trainings-Labor
+          - link "Evaluierungs-Labor" [ref=f1e23] [cursor=pointer]:
+            - /url: "#/evaluation-lab"
+            - generic [aria-hidden] [ref=f1e24]: ⚖
+            - text: Evaluierungs-Labor
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]: Forschung
+        - generic [ref=f1e27]:
+          - link "Generator-Labor" [ref=f1e28] [cursor=pointer]:
+            - /url: "#/generator-lab"
+            - generic [aria-hidden] [ref=f1e29]: ∿
+            - text: Generator-Labor
+          - link "Agenten-Labor" [ref=f1e30] [cursor=pointer]:
+            - /url: "#/agent-lab"
+            - generic [aria-hidden] [ref=f1e31]: ⬡
+            - text: Agenten-Labor
+          - link "Modellbibliothek" [ref=f1e32] [cursor=pointer]:
+            - /url: "#/model-library"
+            - generic [aria-hidden] [ref=f1e33]: ▤
+            - text: Modellbibliothek
+      - generic [ref=f1e34]:
+        - generic [ref=f1e35]: System
+        - generic [ref=f1e36]:
+          - link "Verlauf" [ref=f1e37] [cursor=pointer]:
+            - /url: "#/history"
+            - generic [aria-hidden] [ref=f1e38]: ↻
+            - text: Verlauf
+          - link "API / MCP" [ref=f1e39] [cursor=pointer]:
+            - /url: "#/api-mcp"
+            - generic [aria-hidden] [ref=f1e40]: ⇄
+            - text: API / MCP
+          - link "Tutorials & Doku" [ref=f1e41] [cursor=pointer]:
+            - /url: "#/docs"
+            - generic [aria-hidden] [ref=f1e42]: ❑
+            - text: Tutorials & Doku
+          - link "Einstellungen" [ref=f1e43] [cursor=pointer]:
+            - /url: "#/settings"
+            - generic [aria-hidden] [ref=f1e44]: ⚙
+            - text: Einstellungen
+    - generic [ref=f1e46]:
+      - combobox [ref=f1e47]:
+        - option "English"
+        - option "Deutsch" [selected]
+        - option "Français"
+      - generic [ref=f1e48]: Alle Daten bleiben auf diesem Gerät
+  - main [ref=f1e49]:
+    - generic [ref=f1e247]:
+      - heading "Gewichts-Studio" [level=1] [ref=f1e248]
+      - paragraph [ref=f1e249]: Jede Änderung ist ein unveränderlicher, hash-verankerter Patch. Nichts wird still überschrieben, alles ist umkehrbar.
+    - generic [ref=f1e256]:
+      - region [ref=f1e257]:
+        - heading "Tensoren" [level=3] [ref=f1e260]
+        - generic [ref=f1e261]:
+          - generic [ref=f1e262]:
+            - generic [ref=f1e263]: Modellname
+            - combobox "Modellname" [ref=f1e264]:
+              - option "Browser MLP 24×16" [selected]
+          - generic [ref=f1e265]:
+            - generic [ref=f1e266]: Tensoren
+            - combobox "Tensoren" [ref=f1e267]:
+              - option "w1 [16,24]" [selected]
+              - option "b1 [24]"
+              - option "w2 [24,4]"
+              - option "b2 [4]"
+        - generic [ref=f1e268]:
+          - generic [ref=f1e269]:
+            - generic [ref=f1e270]: Mittelwert
+            - generic [ref=f1e271]: "-0,0079"
+          - generic [ref=f1e272]:
+            - generic [ref=f1e273]: Std
+            - generic [ref=f1e274]: 0,3745
+          - generic [ref=f1e275]:
+            - generic [ref=f1e276]: Norm
+            - generic [ref=f1e277]: 7,340
+          - generic [ref=f1e278]:
+            - generic [ref=f1e279]: Endlich
+            - generic [ref=f1e280]: "true"
+        - generic [ref=f1e281]:
+          - heading "Heatmap (begrenzter Ausschnitt)" [level=4] [ref=f1e282]
+          - 'img "w1 [16,24]: 8 by 8 matrix, max absolute value 1.2086." [ref=f1e283]':
+            - generic "0.77276" [ref=f1e284]
+            - generic "0.09119" [ref=f1e285]
+            - generic "-0.10969" [ref=f1e286]
+            - generic "-0.09673" [ref=f1e287]
+            - generic "-0.11396" [ref=f1e288]
+            - generic "0.05181" [ref=f1e289]
+            - generic "-0.01370" [ref=f1e290]
+            - generic "-0.29459" [ref=f1e291]
+            - generic "-0.83720" [ref=f1e292]
+            - generic "0.57185" [ref=f1e293]
+            - generic "0.36136" [ref=f1e294]
+            - generic "-0.23410" [ref=f1e295]
+            - generic "-0.08045" [ref=f1e296]
+            - generic "-0.31969" [ref=f1e297]
+            - generic "0.58275" [ref=f1e298]
+            - generic "-0.01475" [ref=f1e299]
+            - generic "0.17094" [ref=f1e300]
+            - generic "-0.00459" [ref=f1e301]
+            - generic "0.30440" [ref=f1e302]
+            - generic "-0.53055" [ref=f1e303]
+            - generic "0.41018" [ref=f1e304]
+            - generic "-0.05003" [ref=f1e305]
+            - generic "0.07317" [ref=f1e306]
+            - generic "0.27820" [ref=f1e307]
+            - generic "0.19785" [ref=f1e308]
+            - generic "-0.54161" [ref=f1e309]
+            - generic "0.25325" [ref=f1e310]
+            - generic "-0.06760" [ref=f1e311]
+            - generic "-0.72727" [ref=f1e312]
+            - generic "0.08747" [ref=f1e313]
+            - generic "0.12284" [ref=f1e314]
+            - generic "0.48001" [ref=f1e315]
+            - generic "-0.68893" [ref=f1e316]
+            - generic "-0.63954" [ref=f1e317]
+            - generic "0.45213" [ref=f1e318]
+            - generic "-0.80068" [ref=f1e319]
+            - generic "0.71266" [ref=f1e320]
+            - generic "-0.91725" [ref=f1e321]
+            - generic "0.53402" [ref=f1e322]
+            - generic "-0.06243" [ref=f1e323]
+            - generic "-0.06156" [ref=f1e324]
+            - generic "0.04324" [ref=f1e325]
+            - generic "0.64871" [ref=f1e326]
+            - generic "-0.61000" [ref=f1e327]
+            - generic "0.29789" [ref=f1e328]
+            - generic "0.05026" [ref=f1e329]
+            - generic "1.20861" [ref=f1e330]
+            - generic "0.31978" [ref=f1e331]
+            - generic "0.34372" [ref=f1e332]
+            - generic "-0.19243" [ref=f1e333]
+            - generic "0.31629" [ref=f1e334]
+            - generic "0.20049" [ref=f1e335]
+            - generic "0.02291" [ref=f1e336]
+            - generic "-0.06192" [ref=f1e337]
+            - generic "0.17633" [ref=f1e338]
+            - generic "-0.20937" [ref=f1e339]
+            - generic "-0.19013" [ref=f1e340]
+            - generic "0.23433" [ref=f1e341]
+            - generic "0.39572" [ref=f1e342]
+            - generic "0.07124" [ref=f1e343]
+            - generic "0.15663" [ref=f1e344]
+            - generic "-0.13825" [ref=f1e345]
+            - generic "-0.45897" [ref=f1e346]
+            - generic "-0.16923" [ref=f1e347]
+        - generic [ref=f1e348]:
+          - heading "Histogramm" [level=4] [ref=f1e349]
+          - 'img "Histogramm: 20 value bins, maximum 67." [ref=f1e350]':
+            - generic [ref=f1e369]:
+              - generic [ref=f1e370]: count
+              - generic [ref=f1e371]: value
+      - region [ref=f1e372]:
+        - heading "Operation" [level=3] [ref=f1e375]
+        - generic [ref=f1e376]:
+          - generic [ref=f1e377]:
+            - generic [ref=f1e378]: Operation
+            - combobox "Operation" [ref=f1e379]:
+              - option "scale" [selected]
+              - option "clamp"
+              - option "setScalar"
+              - option "normalize"
+              - option "sparsify"
+          - generic [ref=f1e380]:
+            - generic [ref=f1e381]: factor
+            - spinbutton "factor" [ref=f1e382]: "0.98"
+          - generic [ref=f1e383]:
+            - button "Patch prüfen" [active] [ref=f1e384] [cursor=pointer]
+            - button "Patch anwenden" [ref=f1e385] [cursor=pointer]
+          - generic [ref=f1e395]:
+            - heading "Wirkung des Patches" [level=4] [ref=f1e396]
+            - table [ref=f1e397]:
+              - rowgroup [ref=f1e398]:
+                - row [ref=f1e399]:
+                  - cell "Geänderte Elemente" [ref=f1e400]
+                  - cell "384" [ref=f1e401]
+                - row [ref=f1e402]:
+                  - cell "Max. |Delta|" [ref=f1e403]
+                  - cell "3.319e-2" [ref=f1e404]
+                - row [ref=f1e405]:
+                  - cell "Relative Normänderung" [ref=f1e406]
+                  - cell "-2.000%" [ref=f1e407]
+          - note [ref=f1e386]:
+            - generic [aria-hidden] [ref=f1e387]: "!"
+            - generic [ref=f1e388]: "Automatisch abgelehnt: unbekannte Operationen, unbekannte Parameter, Formfehler, nicht-endliche Ergebnisse."
+    - region [ref=f1e390]:
+      - generic [ref=f1e392]:
+        - heading "Herkunft" [level=3] [ref=f1e393]
+        - text: Checkpoints
+      - table [ref=f1e409]:
+        - rowgroup [ref=f1e410]:
+          - row [ref=f1e411]:
+            - columnheader "Bezeichnung" [ref=f1e412]
+            - columnheader "SHA-256" [ref=f1e413]
+            - columnheader "Ursprung" [ref=f1e414]
+            - columnheader "Erstellt" [ref=f1e415]
+            - columnheader [ref=f1e416]
+        - rowgroup [ref=f1e417]:
+          - row [ref=f1e418]:
+            - cell "final head" [ref=f1e419]:
+              - text: final
+              - generic [ref=f1e420]: head
+            - cell "de741511579a…" [ref=f1e421]
+            - cell "training" [ref=f1e422]
+            - cell "2026-11-03 19:15:44" [ref=f1e423]
+            - cell [ref=f1e424]:
+              - button "Auf diesen Checkpoint zurücksetzen" [ref=f1e425] [cursor=pointer]
+    - generic [ref=f1e119]:
+      - generic [ref=f1e120]: Mit ❤️ von hcsmedia und timfromhcs
+      - generic [aria-hidden] [ref=f1e121]: ·
+      - generic [ref=f1e122]: Version 0.1.0
+      - generic [aria-hidden] [ref=f1e123]: ·
+      - link "Dokumentation" [ref=f1e124] [cursor=pointer]:
+        - /url: "#/docs"
+      - generic [aria-hidden] [ref=f1e125]: ·
+      - link "Fähigkeitsstatus" [ref=f1e126] [cursor=pointer]:
+        - /url: "#/settings"

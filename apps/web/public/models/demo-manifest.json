@@ -1,0 +1,85 @@
+{
+  "id": "demo-char-lm",
+  "name": "Demo Char LM (desktop-engine example)",
+  "family": "transformer-lm",
+  "maturity": "experimental",
+  "config": {
+    "family": "transformer-lm",
+    "vocab_size": 64,
+    "d_model": 64,
+    "n_layers": 4,
+    "n_heads": 2,
+    "n_kv_heads": 1,
+    "ffn_dim": 256,
+    "context_length": 64,
+    "tie_embeddings": true,
+    "rope_theta": 10000.0,
+    "norm_eps": 1e-06,
+    "dropout": 0.0,
+    "seed": 0
+  },
+  "parameterCount": 250432,
+  "architectureHash": "396e449623256083f81907f4cfe752fee71338c300a8e05ff47a4e399b25dc1f",
+  "onnx": {
+    "path": "/models/demo-char-lm.onnx",
+    "sha256": "1fcfb49234e3bcd57ddf321ee150978ba3b66889ff4d232038b93a18c0cc6a08",
+    "bytes": 1151216,
+    "opset": 17,
+    "parity": {
+      "maxAbsDiff": 7.152557373046875e-07,
+      "tolerance": 0.0001,
+      "provider": "CPUExecutionProvider"
+    }
+  },
+  "training": {
+    "steps": 40,
+    "batchSize": 8,
+    "blockSize": 16,
+    "finalLoss": 2.290881395339966,
+    "valLoss": 2.354556143283844,
+    "seconds": 0.954,
+    "device": "cpu",
+    "seed": 0,
+    "date": "2026-11-03T19:20:52+00:00"
+  },
+  "evaluation": {
+    "suite": "text-smoke",
+    "metrics": [
+      {
+        "name": "val_loss",
+        "value": 2.2973660230636597,
+        "unit": "",
+        "definition": "mean cross-entropy over held-out character windows (synthetic corpus)"
+      },
+      {
+        "name": "perplexity",
+        "value": 9.947945257525266,
+        "unit": "",
+        "definition": "exp(val_loss), clamped for display"
+      },
+      {
+        "name": "next_token_accuracy",
+        "value": 0.392578125,
+        "unit": "fraction",
+        "definition": "argmax accuracy on the same held-out windows"
+      },
+      {
+        "name": "tokens_evaluated",
+        "value": 512.0,
+        "unit": "tokens",
+        "definition": "number of predicted tokens in the evaluation"
+      },
+      {
+        "name": "seconds",
+        "value": 0.0174,
+        "unit": "s",
+        "definition": "wall-clock evaluation time on this machine"
+      }
+    ]
+  },
+  "corpus": {
+    "sha256": "297169d7a8ffca85e3a80aa950f635eedfca142ca9b605bdb3d3aae49cc3c67d",
+    "chars": 6595
+  },
+  "claim": "Trained for 40 steps on a synthetic character corpus and evaluated on held-out windows. It demonstrates the pipeline, not language ability. Do not cite these numbers as model quality."
+}

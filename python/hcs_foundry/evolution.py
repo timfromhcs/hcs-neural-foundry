@@ -182,17 +182,9 @@ def run_evolution(
         if progress:
             progress(entry)
 
-    # Equal-example gradient baseline: same number of *examples*, not the same wall-clock time.
-    baseline: dict[str, Any] = {}
-    if config.baseline_steps > 0:
-        baseline = _gradient_baseline(handle, config, examples_seen, fitness)
-    else:
-        steps = max(1, examples_seen // 64)
-        baseline = _gradient_baseline(handle, config, examples_seen, fitness, steps=steps)
-        baseline["note"] = (
-            "gradient baseline uses the same number of examples as the ES search; wall-clock time and "
-            "gradient cost are not equalised, so this is a sanity comparison, not a race"
-        )
+    # Equal-example gradient baseline: the step count is derived from the baseline batch size so the
+    # two methods consume the same number of training examples (not the same wall-clock time).
+    baseline = _gradient_baseline(handle, config, examples_seen, fitness)
 
     best_cell = archive.best()
     best_array = np.asarray(best_theta, dtype=np.float32)
@@ -225,9 +217,18 @@ def _gradient_baseline(
     *,
     steps: int | None = None,
 ) -> dict[str, Any]:
-    """Train a fresh clone with backprop for a comparable example budget."""
+    """Train a fresh clone with backprop for a comparable example budget.
+
+    The baseline runs in its own throwaway workspace so it cannot pollute the caller's history.
+    """
+    import shutil
+    import tempfile
+    from pathlib import Path
+
     from .models.registry import build_model
-    from .schemas import DatasetSpec, TrainingConfig
+    from .schemas import DatasetSpec, ModelDefinition, TrainingConfig
+    from .storage import Repository, Workspace
+    from .training import datasets
     from .training.trainer import SupervisedTrainer, TrainerControl
 
     cloned = build_model(handle.config.model_dump(mode="json"))
@@ -249,55 +250,45 @@ def _gradient_baseline(
         max_seconds=600,
         seed=config.seed + 1,
     )
-    classes = _NullRepo()
-    trainer = SupervisedTrainer(
-        classes,  # type: ignore[arg-type]
-        classes,  # type: ignore[arg-type]
-        cloned,
-        training,
-        dataset=datasets_spec,
-        control=TrainerControl(),
-    )
+    scratch = Path(tempfile.mkdtemp(prefix="foundry-baseline-"))
     try:
-        trainer.run()
+        workspace = Workspace(scratch)
+        repository = Repository(workspace)
+        # The scratch database needs a model row because checkpoints reference one (FK).
+        repository.add_model(
+            ModelDefinition(
+                id='baseline',
+                name='gradient baseline',
+                config=cloned.config,
+                architecture_hash=cloned.architecture_hash,
+                parameter_count=cloned.parameter_count,
+                source='created',
+            )
+        )
+        trainer = SupervisedTrainer(
+            workspace,
+            repository,
+            cloned,
+            training,
+            dataset=datasets_spec,
+            control=TrainerControl(),
+        )
+        run = trainer.run()
+        repository.close()
     except Exception as exc:  # pragma: no cover - defensive
         return {"error": f"{type(exc).__name__}: {exc}", "steps": steps}
+    finally:
+        shutil.rmtree(scratch, ignore_errors=True)
+
     metrics = fitness(flatten_parameters(cloned.module), -1)
     return {
         "steps": steps,
         "examples": steps * training.batch_size,
+        "final_loss": run.summary.get("final_loss"),
         "score": round(metrics["score"], 6),
         "latency_ms": round(metrics["latency_ms"], 4),
+        "note": (
+            "gradient baseline uses the same number of examples as the ES search; wall-clock time and "
+            "gradient cost are not equalised, so this is a sanity comparison, not a race"
+        ),
     }
-
-
-class _NullRepo:
-    """In-memory sink so the baseline can reuse the trainer without touching the real database."""
-
-    def __init__(self) -> None:
-        self.runs: dict[str, Any] = {}
-        self.metrics: list[Any] = []
-        self.checkpoints: list[Any] = []
-
-    def add_run(self, run: Any) -> Any:
-        self.runs[run.id] = run
-        return run
-
-    def update_run(self, run_id: str, **kwargs: Any) -> None:
-        self.runs.setdefault(run_id, None)
-
-    def add_metric(self, run_id: str, step: int, payload: dict[str, Any]) -> None:
-        self.metrics.append((run_id, step, payload))
-
-    def add_checkpoint(self, record: Any, architecture_hash: str | None = None) -> Any:
-        self.checkpoints.append(record)
-        return record
-
-    def latest_checkpoint(self, model_id: str) -> None:
-        return None
-
-    def get_run(self, run_id: str) -> Any:
-        return self.runs[run_id]
-
-    def log_event(self, *args: Any, **kwargs: Any) -> None:
-        return None

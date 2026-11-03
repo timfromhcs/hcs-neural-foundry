@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "1.0",
+  "generatedFor": "hcs-neural-foundry",
+  "date": "2026-11-03",
+  "legend": {
+    "pass": "verified by an automated check or a recorded measurement",
+    "declared": "implemented but evidence is narrow; labelled experimental in the UI",
+    "unsupported": "no validated implementation; must be displayed as unsupported"
+  },
+  "areas": [
+    {
+      "area": "Model parameter budget",
+      "requirement": "User can request a budget; the UI shows the exact enumerated count and explains infeasibility",
+      "status": "pass",
+      "evidence": ["python/tests/test_core.py::test_solver_returns_verified_counts_and_explains_infeasibility", "python/tests/test_core.py::test_enumerated_parameters_match_formula"]
+    },
+    {
+      "area": "Manual weights",
+      "requirement": "Inspect and edit a tensor, then roll back with provenance",
+      "status": "pass",
+      "evidence": ["python/tests/test_workflows.py::test_all_documented_operations_execute", "python/tests/test_workflows.py::test_rollback_moves_head_to_older_checkpoint"]
+    },
+    {
+      "area": "Agent weights",
+      "requirement": "Agent produces a structured proposal; the validator rejects malformed or unsafe edits",
+      "status": "pass",
+      "evidence": ["python/tests/test_workflows.py::test_policy_blocks_forbidden_operations", "python/tests/test_core.py::test_patch_schema_rejects_unknown_parameters"]
+    },
+    {
+      "area": "Generator",
+      "requirement": "A small generator produces a candidate with a reproducible seed and independent evaluation",
+      "status": "declared",
+      "evidence": ["python/tests/test_generators.py::test_generator_runs_end_to_end"],
+      "limitation": "One MLP family, synthetic tasks, three held-out tasks; no SOTA claim"
+    },
+    {
+      "area": "Gradient training",
+      "requirement": "Tiny model trains, checkpoints, resumes and evaluates",
+      "status": "pass",
+      "evidence": ["python/tests/test_workflows.py::test_training_reduces_loss", "python/tests/test_workflows.py::test_training_writes_checkpoint_and_can_resume"]
+    },
+    {
+      "area": "RL",
+      "requirement": "Toy reward environment with a bounded update and held-out verification",
+      "status": "unsupported",
+      "limitation": "Reward fixtures and isolation exist; no RL trainer is implemented"
+    },
+    {
+      "area": "Evolution",
+      "requirement": "ES/QD run produces a traceable population and compares fairly to a baseline",
+      "status": "declared",
+      "evidence": ["python/tests/test_workflows.py::test_evolution_improves_and_builds_archive", "python/tests/test_workflows.py::test_evolution_is_reproducible"],
+      "limitation": "Example-matched baseline, not compute-matched; tiny MLP only"
+    },
+    {
+      "area": "LLM",
+      "requirement": "Small autoregressive text model runs locally",
+      "status": "pass",
+      "evidence": ["python/tests/test_workflows.py::test_text_suite_reports_definitions_and_baselines", "apps/web/public/models/demo-manifest.json"]
+    },
+    {
+      "area": "Text diffusion",
+      "requirement": "Small masked-token DLM demo with step-count and quality metrics",
+      "status": "unsupported",
+      "limitation": "No trainer or sampler implemented; adapter slot reserved"
+    },
+    {
+      "area": "Image generation",
+      "requirement": "Tiny educational diffusion/flow example",
+      "status": "unsupported",
+      "limitation": "A noise generator would not demonstrate the pipeline"
+    },
+    {
+      "area": "Benchmarks",
+      "requirement": "Results include dataset/protocol/model hashes, hardware and resource metrics",
+      "status": "pass",
+      "evidence": ["python/tests/test_workflows.py::test_text_suite_reports_definitions_and_baselines", "docs/PERFORMANCE.md"]
+    },
+    {
+      "area": "History",
+      "requirement": "Runs and patches survive restart; export/import works",
+      "status": "pass",
+      "evidence": ["python/tests/test_core.py::test_migrations_are_idempotent", "apps/web/tests/db.test.ts"]
+    },
+    {
+      "area": "MCP",
+      "requirement": "Read-only and approval-gated tools work with a conforming client",
+      "status": "declared",
+      "evidence": ["python/tests/test_interfaces.py::test_mcp_server_registers_read_and_gated_tools", "python/tests/test_interfaces.py::test_mcp_tool_calls_are_audited"],
+      "limitation": "Verified through the SDK's in-process client, not an external host application"
+    },
+    {
+      "area": "Local API",
+      "requirement": "OpenAPI available; authentication and CORS tests pass",
+      "status": "pass",
+      "evidence": ["python/tests/test_interfaces.py::test_missing_token_is_rejected", "python/tests/test_interfaces.py::test_cors_allowlist_is_enforced", "python/tests/test_interfaces.py::test_openapi_is_available"]
+    },
+    {
+      "area": "CLI",
+      "requirement": "Fresh environment runs doctor, create, train, eval and export",
+      "status": "pass",
+      "evidence": ["scripts/verify.ps1", "python/tests/test_interfaces.py::test_cli_weight_flow"]
+    },
+    {
+      "area": "NPM package",
+      "requirement": "Package builds, installs and imports from a clean Node project",
+      "status": "unsupported",
+      "limitation": "The web app builds and is deployable; no package is published"
+    },
+    {
+      "area": "PyPI package",
+      "requirement": "Wheel installs and CLI starts from a clean environment",
+      "status": "declared",
+      "limitation": "The wheel builds locally; nothing is published to an index"
+    },
+    {
+      "area": "Browser",
+      "requirement": "Static site runs ONNX WASM; WebGPU only after a successful inference",
+      "status": "declared",
+      "evidence": ["docs/PERFORMANCE.md", "apps/web/tests/mlp.test.ts"],
+      "limitation": "Verified in one Chromium instance; WebGPU reported as experimental"
+    },
+    {
+      "area": "Browser storage",
+      "requirement": "History stored locally, export/restore and delete controls work",
+      "status": "pass",
+      "evidence": ["apps/web/tests/db.test.ts"]
+    },
+    {
+      "area": "Desktop",
+      "requirement": "Clean-machine install and app lifecycle",
+      "status": "unsupported",
+      "limitation": "No Tauri shell or portable launcher is built in this tree"
+    },
+    {
+      "area": "Languages",
+      "requirement": "EN/DE/FR key parity and translated primary journeys",
+      "status": "pass",
+      "evidence": ["apps/web/tests/i18n.test.ts"],
+      "limitation": "Long-form lesson prose is English-only and labelled as such"
+    },
+    {
+      "area": "UX/accessibility",
+      "requirement": "Responsive, keyboard core flow, accessibility checks",
+      "status": "declared",
+      "evidence": ["apps/web/src/components/ui.tsx", "docs/PERFORMANCE.md"],
+      "limitation": "Manual keyboard and viewport checks; no automated axe audit yet"
+    },
+    {
+      "area": "Security",
+      "requirement": "No unrestricted shell, unsafe pickle loading, API exposure or benchmark tampering",
+      "status": "pass",
+      "evidence": ["python/tests/test_workflows.py::test_runtime_modules_avoid_dangerous_primitives", "python/tests/test_interfaces.py::test_approval_gate_blocks_by_default", "docs/SECURITY.md"]
+    },
+    {
+      "area": "Documentation",
+      "requirement": "Zero-to-hero lessons with runnable examples",
+      "status": "pass",
+      "evidence": ["docs/tutorials (20 lessons)"]
+    },
+    {
+      "area": "Branding",
+      "requirement": "Made with ❤️ by hcsmedia and timfromhcs in About/footer/release docs",
+      "status": "pass",
+      "evidence": ["apps/web/src/components/Shell.tsx", "README.md", "docs/tutorials/README.md"]
+    }
+  ]
+}
