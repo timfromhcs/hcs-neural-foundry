@@ -3,6 +3,12 @@
 All notable changes to this project are documented here. Format follows Keep a Changelog; versioning
 follows Semantic Versioning.
 
+## [Unreleased]
+
+### Fixed
+
+* API health and OpenAPI metadata now report the package version instead of a stale `0.1.0` literal. Interface tests compare both surfaces with `hcs_foundry.__version__`.
+
 ## [0.2.0] — 2026-11-03
 
 First published release. Two dependency drifts were found by auditing the tree against current

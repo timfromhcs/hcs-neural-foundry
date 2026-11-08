@@ -9,6 +9,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
+from hcs_foundry import __version__
 from hcs_foundry.api import RateLimiter, create_app
 from hcs_foundry.cli.main import main as cli_main
 from hcs_foundry.errors import SecurityViolation
@@ -106,6 +107,7 @@ def test_health_needs_no_auth(client):
     response = client.get("/api/v1/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert response.json()["version"] == __version__
 
 
 def test_missing_token_is_rejected(client):
@@ -120,6 +122,7 @@ def test_openapi_is_available(client):
     spec = client.get("/api/v1/openapi.json").json()
     assert "/api/v1/models" in spec["paths"]
     assert "/api/v1/weight-patches" in spec["paths"]
+    assert spec["info"]["version"] == __version__
 
 
 def test_model_lifecycle_over_http(client):

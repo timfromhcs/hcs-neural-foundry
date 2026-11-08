@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field, ValidationError
 
+from . import __version__
 from .errors import FoundryError, NotFoundError, SecurityViolation, ValidationFailure
 from .schemas import (
     EvolutionConfig,
@@ -224,7 +225,7 @@ def create_app(
 
     app = FastAPI(
         title="HCS Neural Foundry API",
-        version="0.1.0",
+        version=__version__,
         description=(
             "Local-first API. All compute happens on this machine. Weight edits are immutable patches; "
             "evaluations are recorded with dataset hashes and evaluator versions."
@@ -293,7 +294,7 @@ def create_app(
     def health() -> dict[str, Any]:
         return {
             "status": "ok",
-            "version": "0.1.0",
+            "version": __version__,
             "workspace": str(foundry.workspace.root),
             "schema_version": foundry.repo.db.version,
             "auth_required": True,

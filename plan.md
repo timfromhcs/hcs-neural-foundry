@@ -313,3 +313,7 @@ disagreeing with what we said about it.
 | R7 | Determinism drift across platforms | seeds/versions recorded; same-stack equality tested, cross-machine not claimed | active |
 | R8 | Scope inflation | every feature is implemented+tested or declared `[!]` | active |
 | R9 | Browser storage eviction | estimate + persist request + export bundle + warnings | active |
+
+## 2026-11-08 — API version follow-up
+
+Health and OpenAPI version metadata used stale 0.1.0 literals despite package/runtime 0.2.0. Replaced them with the package version and added interface parity assertions. Local regression first failed twice, then passed; all 121 Python tests (0 skipped), 48 web tests and scripts/release.ps1 gates passed in isolated Python3.12.13. See docs/engineering/API_VERSION_AUDIT_2026-11-08.md for evidence and verify-MCP discovery limitation. Browser footer version and unauthenticated workspace-path visibility remain separate scope; no claim of fixing them.
