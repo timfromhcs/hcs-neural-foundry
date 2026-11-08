@@ -505,9 +505,8 @@ def validate_operation_params(operation: PatchOperation, params: dict[str, Any])
             raise ValidationFailure("source_checkpoint_sha256 must be a 64-char sha256")
         if not isinstance(params["source_tensor"], str) or not params["source_tensor"]:
             raise ValidationFailure("source_tensor must be a non-empty string")
-    elif operation is PatchOperation.SET_TRAINABLE:
-        if not isinstance(params["trainable"], bool):
-            raise ValidationFailure("trainable must be a boolean")
+    elif operation is PatchOperation.SET_TRAINABLE and not isinstance(params["trainable"], bool):
+        raise ValidationFailure("trainable must be a boolean")
     return params
 
 
